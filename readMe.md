@@ -24,7 +24,7 @@ if (length(new.pkg)) {
   install.packages(new.pkg)
 }
 ```
-Make sure each of the packages can be loaded if the app doesn't work.
+Installing the above packages prior to running will speed up the initial loading by a lot. Make sure each of the packages can be loaded via `library()`.
 
 ## Side Tabs in App
 
