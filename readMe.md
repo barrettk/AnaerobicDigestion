@@ -1,6 +1,6 @@
 # Anaerobic Batch Reactor
 
-This app is associated with my senior design project in chemical engineering at Drexel University. [^1]
+This app is associated with my senior design project in chemical engineering at Drexel University [^1]. 
 The model was developed to simulate the degradation of heavy organic compounds through anaerobic digestion. Five unique processes take place in the simulated batch reactor, including the enzymatic hydrolysis of guar gum, acidogenesis of polysaccharide chains, acetogensis, methanogenesis, and anaerobic degredation using bacteroides. See the `Background of Process` tab for a more detailed process description.
 
 ## Getting Started
@@ -29,11 +29,11 @@ Installing the above packages prior to running will speed up the initial loading
 ## Side Tabs in App
 
   * Use the `Model Parameters` tab to adjust the model inputs. Clicking a category will open a separate menu with adjustable parameters. Click the category again to make the menu disappear. The `simulation` option will allow for a sensitivity analysis of a chosen parameter.
-
+![Screenshot](Screenshot_modelParam.png)
 
   * Use the `Plots` tab to view a specific set of plots. Selections include *Main Components*,  *Intermediate Products*,  *Bacteria Growth*, and *Reactor Properties*.
-
 ![Screenshot](Screenshot_Plots.png)
+
   * Use the `Tables` tab to view the input and output concentrations. Selections include *Main Components*  and *Reactor Properties*.
  
   * Use the `Codes` tab to display and download the model file, <tt>AnaerobicDigestionShiny.cpp</tt>, or the <tt>app.R</tt> used for this application. Note that other scripts are needed to run the model.
@@ -41,6 +41,9 @@ Installing the above packages prior to running will speed up the initial loading
   * Use the `Mathematical Model` tab  to display the differential equations present in the model.
   
   * Use the `Background of Process` tab to download a PDF summarizing the model process.
+
+### Sensitivity Analysis
+![Screenshot](Screenshot_Sensitivity.png)
 
 ### Features Coming Soon
 
