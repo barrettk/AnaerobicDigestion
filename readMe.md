@@ -1,6 +1,7 @@
 # Anaerobic Batch Reactor
 
-One Paragraph of project description goes here
+This app is associated with my senior design project in chemical engineering at Drexel University. [^1]
+The model was developed to simulate the degradation of heavy organic compounds through anaerobic digestion. Five unique processes take place in the simulated batch reactor, including the enzymatic hydrolysis of guar gum, acidogenesis of polysaccharide chains, acetogensis, methanogenesis, and anaerobic degredation using bacteroides. See the `Background of Process` tab for a more detailed process description.
 
 ## Getting Started
 
@@ -51,28 +52,13 @@ Make sure each of the packages can be loaded if the app doesn't work.
   * Expected revenue plots
   * Optimization of other reactor settings
 
-
-## Modeled Using:
-
-* [mrgsolve](https://github.com/metrumresearchgroup/mrgsolve) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
-
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
-
-## Authors
-
-* **Kyle Barrett** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-
-
 ## Acknowledgments
 
-* Senior Design Project at Drexel University
-* Year: 2019, Team Name: *Frack Off*
+* Author: **Kyle Barrett**
 * Group Members: Kyle Barrett, Luke Growney, Prem Patel, Farhaan Rizvi
+* Modeled using [mrgsolve](https://github.com/metrumresearchgroup/mrgsolve) - Solving of PDE's 
+
+[^1]: Credit:
+
+    Year: 2019, Team Name: "Frack Off", Senior Design Project at Drexel University
+    Group Members: Kyle Barrett, Luke Growney, Prem Patel, Farhaan Rizvi
