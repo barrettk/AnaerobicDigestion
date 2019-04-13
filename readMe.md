@@ -29,9 +29,11 @@ Installing the above packages prior to running will speed up the initial loading
 ## Side Tabs in App
 
   * Use the `Model Parameters` tab to adjust the model inputs. Clicking a category will open a separate menu with adjustable parameters. Click the category again to make the menu disappear. The `simulation` option will allow for a sensitivity analysis of a chosen parameter.
+  
 ![Screenshot](Screenshot_modelParam.png)
 
   * Use the `Plots` tab to view a specific set of plots. Selections include *Main Components*,  *Intermediate Products*,  *Bacteria Growth*, and *Reactor Properties*.
+  
 ![Screenshot](Screenshot_Plots.png)
 
   * Use the `Tables` tab to view the input and output concentrations. Selections include *Main Components*  and *Reactor Properties*.
@@ -43,7 +45,10 @@ Installing the above packages prior to running will speed up the initial loading
   * Use the `Background of Process` tab to download a PDF summarizing the model process.
 
 ### Sensitivity Analysis
+
+Example of how to perform a sensitivity analysis on a given parameter:
 ![Screenshot](Screenshot_Sensitivity.png)
+
 
 ### Features Coming Soon
 
