@@ -1,4 +1,11 @@
 
+pkg <- c("shiny", "mrgsolve", "shinyAce", "shinydashboard", "dplyr", "knitr", "plyr", "tidyverse", 
+         "wrapr", "extrafont", "polynom", "ggplot2", "shinyWidgets", "gridExtra", "rmarkdown", 
+         "markdown", "sn", "rlang", "lattice", "reshape", "reshape2", "magrittr", "stats")
+new.pkg <- pkg[!(pkg %in% installed.packages())]
+if (length(new.pkg)) {
+  install.packages(new.pkg)
+}
 #Mrgsolve
 library(mrgsolve,quietly = T)
 options(mrgsolve_mread_quiet=TRUE)
@@ -6,7 +13,7 @@ options(mrgsolve_mread_quiet=TRUE)
 suppressMessages(library(shiny,quietly = T))
 suppressMessages(library(shinyAce,quietly = T))
 suppressMessages(library(shinydashboard,quietly = T))
-suppressMessages(library(shinyjs,quietly=T))
+#suppressMessages(library(shinyjs,quietly=T))
 #library(shiny.semantic)
 library(shinyWidgets,quietly = T)
 suppressMessages(library(rsconnect,quietly = T))
@@ -14,12 +21,10 @@ library(rmarkdown); library(markdown)
 library(knitr)
 
 #Server Packages
-suppressMessages(library(devtools,quietly = T))
 suppressMessages(library(plyr,quietly = T))
 suppressMessages(library(dplyr,quietly = T))
 suppressMessages(library(ggplot2,quietly = T))
 suppressMessages(library(tidyverse,quietly = T))
-suppressMessages(library(readxl,quietly = T))
 suppressMessages(library(sn,quietly = T))
 library(stats)
 library(rlang)
@@ -969,27 +974,27 @@ server <- function(input, output,session) {
   
   
   #Render ReadMe UI
-  rmdfiles <- c("readMe.Rmd","GettingStarted.Rmd")
+  rmdfiles <- c("MathModel.Rmd","GettingStarted.Rmd")
   sapply(rmdfiles, knit, quiet = T)
   output$markdownRM <- renderUI({
     fluidPage(
     #tags$head(HTML("<script type='text/x-mathjax-config'>MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: 'all'} } });</script>")),
-    #includeMarkdown("readMe.Rmd")
-    #includeMarkdown(rmarkdown::render("readMe.Rmd",'html_document'))
-    #HTML(markdown::markdownToHTML(knit('readMe.Rmd', quiet = TRUE), fragment.only=TRUE))
-    withMathJax(includeMarkdown("readMe.md"))
-    #withMathJax(HTML(markdown::markdownToHTML(knit("readMe.Rmd", quiet = TRUE), fragment.only=TRUE,title="Frack Off",header="Mathematical Model for Anaerobic Digestion")))
+    #includeMarkdown("MathModel.Rmd")
+    #includeMarkdown(rmarkdown::render("MathModel.Rmd",'html_document'))
+    #HTML(markdown::markdownToHTML(knit('MathModel.Rmd', quiet = TRUE), fragment.only=TRUE))
+    withMathJax(includeMarkdown("MathModel.Rmd"))
+    #withMathJax(HTML(markdown::markdownToHTML(knit("MathModel.Rmd", quiet = TRUE), fragment.only=TRUE,title="Frack Off",header="Mathematical Model for Anaerobic Digestion")))
     )
     })
   #Render GettingStarted UI
   output$markdownGS <- renderUI({
     fluidPage(
       #tags$head(HTML("<script type='text/x-mathjax-config'>MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: 'all'} } });</script>")),
-      #includeMarkdown("readMe.Rmd")
-      #includeMarkdown(rmarkdown::render("readMe.Rmd",'html_document'))
-      #HTML(markdown::markdownToHTML(knit('readMe.Rmd', quiet = TRUE), fragment.only=TRUE))
+      #includeMarkdown("MathModel.Rmd")
+      #includeMarkdown(rmarkdown::render("MathModel.Rmd",'html_document'))
+      #HTML(markdown::markdownToHTML(knit('MathModel.Rmd', quiet = TRUE), fragment.only=TRUE))
       withMathJax(includeMarkdown("GettingStarted.Rmd"))
-      #withMathJax(HTML(markdown::markdownToHTML(knit("readMe.Rmd", quiet = TRUE), fragment.only=TRUE,title="Frack Off",header="Mathematical Model for Anaerobic Digestion")))
+      #withMathJax(HTML(markdown::markdownToHTML(knit("MathModel.Rmd", quiet = TRUE), fragment.only=TRUE,title="Frack Off",header="Mathematical Model for Anaerobic Digestion")))
     )
   })
   
