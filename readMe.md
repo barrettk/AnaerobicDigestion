@@ -1,255 +1,78 @@
----
-title: "Mathematical Model for Anaerobic Digestion in Batch Reactor"
-date: "March 4th, 2019"
-author: "Kyle Barrett"
-header-includes: \usepackage{amsmath}
-output:
-  html_document:
-   mathjax: "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-   number_sections: true
-params:
-  set_title: "Mathematical Model for Anaerobic Digestion in Batch Reactor"
-runtime: shiny
-theme: cerulean
----
+# Anaerobic Batch Reactor
 
-<style>
-body {
-text-align: justify}
-</style>
+One Paragraph of project description goes here
 
-<style type="text/css">
+## Getting Started
 
-body{ /* Normal  */
-      font-size: 15px;
-  }
-td {  /* Table  */
-  font-size: 14px;
+The purpose of this app is to optimize the model parameters in order to increase the profitability of the bioreactor. The user will be able to adjust initial bacteria concentrations, reactor temperature (both static and dynamic), etc., and see a visual representation of the outcome. Note that not all adjustable parameters will have an effect on every plot.
+
+As soon as the user loads the app, the model is compiled and run using the current parameter settings. As the user adjusts these parameters, the plots and tables will update according to the new settings.
+
+The tabs on the left then allow the user to navigate the simulated reactor output and read more about the process. You can also specify the time in which to truncate the data and evaluate the output, though the minimum value is currently 100 h. The reactor that follows the anaerobic digestor is capable of removing small quantities left over. Ideally you would set a minimum acceptable concentration, and optimize parameters to decrease the time required to reduce the contaminants to that concentration, though this not been implemented due to the lack of observational data.
+
+### Prerequisites and Running the App
+
+To run the app locally, install R and run the command: `runGitHub( "AnaerobicDigestion", "KyleBarrett")`
+It should install the required packages automatically, but in the event of complications, run the following lines in your R console:
+```
+pkg <- c("shiny", "mrgsolve", "shinyAce", "shinydashboard", "dplyr", "knitr", "plyr", "tidyverse", 
+         "wrapr", "extrafont", "polynom", "ggplot2", "shinyWidgets", "gridExtra", "rmarkdown", 
+         "markdown", "sn", "rlang", "lattice", "reshape", "reshape2", "magrittr", "stats")
+new.pkg <- pkg[!(pkg %in% installed.packages())]
+if (length(new.pkg)) {
+  install.packages(new.pkg)
 }
-h1.title {
-  font-size: 38px;
-  color: DarkRed;
-}
-h1 { /* Header 1 */
-  font-size: 26px;
-  color: DarkBlue;
-}
-h2 { /* Header 2 */
-    font-size: 19px;
-  color: DarkRed;
-}
-h3 { /* Header 3 */
-  font-size: 22px;
-}
-code.r{ /* Code block */
-    font-size: 13px;
-}
-pre { /* Code block - determines code spacing between lines */
-    font-size: 14px;
-}
-</style>
+```
+Make sure each of the packages can be loaded if the app doesn't work.
 
-## **Components Not Added Yet**: 
+## Side Tabs in App
 
-  * Petrolium distillates, methanol, and isopropanol are still in research stage
-  * In addition to the above components, PEG-400 has not been added to the mathematical representation (this page) yet
+  * Use the `Model Parameters` tab to adjust the model inputs. Clicking a category will open a separate menu with adjustable parameters. Click the category again to make the menu disappear. The `simulation` option will allow for a sensitivity analysis of a chosen parameter.
 
-# **Hydrolysis of Guar Gum**: 
+  * Use the `Plots` tab to view a specific set of plots. Selections include *Main Components*,  *Intermediate Products*,  *Bacteria Growth*, and *Reactor Properties*.
 
-<br>
-
-$$
-\mathbf{\frac{dGuar,bonds}{dt}}=\frac{dC_{Guar,bonds}}{dt} * vol=- \left(\frac{k_{cat}*C_e*C_{Guar,bonds}}{K_{m,G}+C_{Guar,bonds}}\right)*vol
-$$
-
-  * $C_{Guar, bonds}$ is molar concentration of *breakable bonds* of guar gum.
-      
-  * $C_{Guar,bonds}=C_{Guar}*N_{Bonds}$,    $\space\space\space N_{Bonds}=\frac{MW_{Guar}}{MW_{Glucose}} ≈ 6600\space bonds$,    $\space\space\space 	k_{cat}=\frac{v_{max,G}}{C_e}$
-
-<br> 
-     
-$$
-\mathbf{\frac{dGlucose}{dt}}= \left[\left(\frac{k_{cat}*C_e*C_{Guar,bonds}}{K_m+C_{Guar,bonds}}\right) -
-Stoich \left(\frac{µ_{max,G}*C_{Glucose}}{Ks_G+C_{Glucose}}*\frac{X_{Acidogen}}{MW_{Glucose}*Y_{Acidogen, G}}\right)*3\space Reactions\right]*vol
-$$
-     
-  * The acidogenic portion is **multiplied by 3** to account for the three acidogenic reactions that take place. The stoichiometry and Monod parameters happen to be the same in each case.
-      
-  *	Note: The parameters *$Stoich_{Acido, 1}$* and *$Stoich_{Acido, 2}$* in the **acidogenesis** section are technically equal, but are differentiated to draw attention to the fact that two reactions are utilizing/producing the specified component.
-     
-<br>
-
-# **Acidogenesis and Acetogenesis**: 
-
-<br>
-
-## **Liquids**:
-$$
-\mathbf{\frac{dEthanol}{dt}}= \left[Stoich \left(\frac{µ_{max,G}*C_{Glucose}}{Ks_G+C_{Glucose}}*\frac{X_{Acidogen}}{MW_{Glucose}*Y_{Acidogen,   G}} \right) -Stoich \left(\frac{µ_{max,E}*C_{Ethanol}}{Ks_E+C_{Ethanol}}*\frac{X_{Acetogen}}{MW_{Ethanol}*Y_{Acetogen, E}}\right) \right]*vol
-$$
-
-<br>
-
-$$
-\mathbf{\frac{dPropA}{dt}}= \left[Stoich \left(\frac{µ_{max,G}*C_{Glucose}}{Ks_G+C_{Glucose}}*\frac{X_{Acidogen}}{MW_{Glucose}*Y_{Acidogen,   G}} \right) -Stoich \left(\frac{µ_{max,PA}*C_{PropA}}{Ks_{PA}+C_{PropA}}*\frac{X_{Acetogen}}{MW_{PropA}*Y_{Acetogen, PA}}\right) \right]*vol
-$$
-
-<br>
-
+  * Use the `Tables` tab to view the input and output concentrations. Selections include *Main Components*  and *Reactor Properties*.
  
+  * Use the `Codes` tab to display and download the model file, <tt>AnaerobicDigestionShiny.cpp</tt>, or the <tt>app.R</tt> used for this application. Note that other scripts are needed to run the model.
 
-$$
-\begin{align}
-\mathbf{\frac{dAcetate}{dt}}= 
-\begin{bmatrix}
-Stoich \left(\frac{µ_{max,G}*C_{Glucose}}{Ks_G+C_{Glucose}}*\frac{X_{Acidogen}}{MW_{Glucose}*Y_{Acidogen,   G}} \right) \\\\+ 
-Stoich \left(\frac{µ_{max,E}*C_{Ethanol}}{Ks_{E}+C_{Ethanol}}*\frac{X_{Acetogen}}{MW_{Ethanol}*Y_{Acetogen, E}}\right) \\\\+
-Stoich \left(\frac{µ_{max,PA}*C_{PropA}}{Ks_{PA}+C_{PropA}}*\frac{X_{Acetogen}}{MW_{PropA}*Y_{Acetogen, PA}}\right) \\\\- 
-Stoich \left(\frac{µ_{max,A}*C_{Acetate}}{Ks_{A}+C_{Acetate}}*\frac{X_{Acetogen}}{MW_{Acetate}*Y_{Methanogen, PA}}\right)\end{bmatrix}*vol + 
-Stoich \left(\frac{v_{max,A}*\left(\left[H_2 \right]-\left[H_2 \right]^* \right)}{Km_A + \left[H_2 \right]-\left[H_2 \right]^* }*\frac{X_{Acetogen}}{X_{i,Acetogen}} \right)
-\end{align}
-$$
-
-<br>
-
-$$
-\begin{align}
-\mathbf{\frac{dWater}{dt}}= 
-\begin{bmatrix}
--Stoich \left(\frac{µ_{max,E}*C_{Ethanol}}{Ks_{E}+C_{Ethanol}}*\frac{X_{Acetogen}}{MW_{Ethanol}*Y_{Acetogen, E}}\right) \\\\-
-Stoich \left(\frac{µ_{max,PA}*C_{PropA}}{Ks_{PA}+C_{PropA}}*\frac{X_{Acetogen}}{MW_{PropA}*Y_{Acetogen, PA}}\right)  
-\end{bmatrix}*vol\space + 
-\begin{bmatrix}
-Stoich \left(\frac{v_{max,A}*\left(\left[H_2 \right]-\left[H_2 \right]^* \right)}{Km_A + \left[H_2 \right]-\left[H_2 \right]^* }*\frac{X_{Acetogen}}{X_{i,Acetogen}} \right) +\\\\
-Stoich \left(\frac{v_{max,M}*\left(\left[H_2 \right]-\left[H_2 \right]^* \right)}{Km_M + \left[H_2 \right]-\left[H_2 \right]^* }*\frac{X_{Methanogen}}{X_{i,Methanogen}} \right)\end{bmatrix}
-\end{align}
-$$
-<br>
-
-## **Gases**:
-
-  *	Note: The following PDEs keep track of total moles, i.e. *Liquid* + *Gas*. The partitioning of moles into each phase are determined by Henry's constant, and is described following the differential equations.
-
-<br>
-
-$$
-\begin{align}
-\mathbf{\frac{dCO_{2} (Tot)}{dt}}= 
-\begin{bmatrix}
-Stoich_{Acido,1} \left(\frac{µ_{max,G}*C_{Glucose}}{Ks_G+C_{Glucose}}*\frac{X_{Acidogen}}{MW_{Glucose}*Y_{Acidogen,   G}} \right) \\\\+ 
-Stoich_{Acido,2} \left(\frac{µ_{max,G}*C_{Glucose}}{Ks_G+C_{Glucose}}*\frac{X_{Acidogen}}{MW_{Glucose}*Y_{Acidogen,   G}} \right) \\\\+ 
-Stoich \left(\frac{µ_{max,PA}*C_{PropA}}{Ks_{PA}+C_{PropA}}*\frac{X_{Acetogen}}{MW_{PropA}*Y_{Acetogen, PA}}\right) \\\\+ 
-Stoich \left(\frac{µ_{max,A}*C_{Acetate}}{Ks_{A}+C_{Acetate}}*\frac{X_{Acetogen}}{MW_{Acetate}*Y_{Methanogen, PA}}\right)\end{bmatrix}*vol\space - 
-\begin{bmatrix}
-Stoich \left(\frac{v_{max,A}*\left(\left[H_2 \right]-\left[H_2 \right]^* \right)}{Km_A + \left[H_2 \right]-\left[H_2 \right]^* }*\frac{X_{Acetogen}}{X_{i,Acetogen}} \right)+ \\\\
-Stoich \left(\frac{v_{max,M}*\left(\left[H_2 \right]-\left[H_2 \right]^* \right)}{Km_M + \left[H_2 \right]-\left[H_2 \right]^* }*\frac{X_{Methanogen}}{X_{i,Methanogen}} \right)
-\end{bmatrix}
-\end{align}
-$$
-  *	See previous comment regarding the parameters *$Stoich_{Acido, 1}$* and *$Stoich_{Acido, 2}$*
+  * Use the `Mathematical Model` tab  to display the differential equations present in the model.
   
-<br>
-  
-$$
-\begin{align}
-\mathbf{\frac{dH_{2}(Tot)}{dt}}= 
-\begin{bmatrix}
-Stoich_{Acido,1} \left(\frac{µ_{max,G}*C_{Glucose}}{Ks_G+C_{Glucose}}*\frac{X_{Acidogen}}{MW_{Glucose}*Y_{Acidogen,   G}} \right) \\\\+ 
-Stoich \left(\frac{µ_{max,E}*C_{Ethanol}}{Ks_{E}+C_{Ethanol}}*\frac{X_{Acetogen}}{MW_{Ethanol}*Y_{Acetogen, E}}\right) \\\\+
-Stoich \left(\frac{µ_{max,PA}*C_{PropA}}{Ks_{PA}+C_{PropA}}*\frac{X_{Acetogen}}{MW_{PropA}*Y_{Acetogen, PA}}\right) \\\\
-\end{bmatrix}*vol\space - 
-\begin{bmatrix}
-Stoich \left(\frac{v_{max,A}*\left(\left[H_2 \right]-\left[H_2 \right]^* \right)}{Km_A + \left[H_2 \right]-\left[H_2 \right]^* }*\frac{X_{Acetogen}}{X_{i,Acetogen}} \right)+ \\\\
-Stoich \left(\frac{v_{max,M}*\left(\left[H_2 \right]-\left[H_2 \right]^* \right)}{Km_M + \left[H_2 \right]-\left[H_2 \right]^* }*\frac{X_{Methanogen}}{X_{i,Methanogen}} \right)
-\end{bmatrix}
-\end{align}
-$$
-  
-<br>
+  * Use the `Background of Process` tab to download a PDF summarizing the model process.
+
+### Features Coming Soon
+
+  * Addition of petrolium distillates, methanol, and isopropanol to the model
+  * Temperature Optimization --> most likely piecewise function
+  * Visual Representation of model
+
+### Potential Upcoming Features
+
+  * Thermodynamic modeling
+  * Expected revenue plots
+  * Optimization of other reactor settings
 
 
+## Modeled Using:
 
-## **Gas-Liquid Equilibrium**: 
+* [mrgsolve](https://github.com/metrumresearchgroup/mrgsolve) - The web framework used
+* [Maven](https://maven.apache.org/) - Dependency Management
+* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
 
-$$
-\begin{align}
-\mathbf{CO_2 (Gas)}=\frac{CO_2 (Tot)}{\left[1+\frac{R*T*Henry_{CO_{2}}*vol}{vol_{Head Space} }\right]} ,&&
-\mathbf{P_{CO_2}}=\left(\frac{CO_2 (Gas)}{vol_{Head Space}}\right)*R*T
-\end{align}
-$$
+## Contributing
 
-<br>
-$$
-\begin{align}
-\mathbf{H_2 (Gas)}=\frac{H_2 (Tot)}{\left[1+\frac{R*T*Henry_{H_{2}}*vol}{vol_{Head Space} }\right]} ,&&
-\mathbf{P_{H_2}}=\left(\frac{H_2 (Gas)}{vol_{Head Space}}\right)*R*T
-\end{align}
-$$
+Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
 
-<br>
-$$
-\begin{align}
-\mathbf{CO_2 (Liq)}=P_{CO_2}*Henry_{CO_{2}}*vol ,&&
-\mathbf{H_2 (Liq)}=P_{H_2}*Henry_{H_{2}}*vol
-\end{align}
-$$
+## Versioning
 
-<br>
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
 
-# **Methanogenesis**: 
+## Authors
 
-<br>
+* **Kyle Barrett** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
 
-$$
-\mathbf{\frac{dCH_{4}(Tot)}{dt}}= Stoich \left(\frac{µ_{max,A}*C_{Acetate}}{Ks_{A}+C_{Acetate}}*\frac{X_{Acetogen}}{MW_{Acetate}*Y_{Methanogen, PA}}\right)*vol + 
-Stoich \left(\frac{v_{max,M}*\left(\left[H_2 \right]-\left[H_2 \right]^* \right)}{Km_M + \left[H_2 \right]-\left[H_2 \right]^* }*\frac{X_{Methanogen}}{X_{i,Methanogen}} \right)
-$$
-<br>
 
-## **Gas-Liquid Equilibrium**: 
+## Acknowledgments
 
-<br>
-$$
-\begin{align}
-\mathbf{CH_4 (Gas)}=\frac{CH_4 (Tot)}{\left[1+\frac{R*T*Henry_{CH_{4}}*vol}{vol_{Head Space} }\right]} ,&&
-\mathbf{P_{CH_4}}=\left(\frac{CH_4 (Gas)}{vol_{Head Space}}\right)*R*T
-\end{align}
-$$
-
-<br>
-
-$$
-\mathbf{CH_4 (Liq)}=P_{CH_4}*Henry_{CH_4}*vol
-$$
-<br>
-# **Bacteria Growth**: 
-
-<br>
-$$
-\begin{align}
-\mathbf{\frac{dAcidogen}{dt}}= 3 *
-\left[\frac{µ_{max,G}*C_{Glucose}}{Ks_G+C_{Glucose}}*X_{Acidogen} \right]*vol
-\end{align}
-$$
-  *	The **'3'** accounts for each of the acidogenic reactions occuring on the subtrate (Glucose)
-
-<br>
-$$
-\begin{align}
-\mathbf{\frac{dAcetogen}{dt}}=
-&\left[\frac{µ_{max,E}*C_{Ethanol}}{Ks_E+C_{Ethanol}}*X_{Acetogen}+
-\frac{µ_{max,PA}*C_{PropA}}{Ks_{PA}+C_{PropA} }*X_{Acetogen} \right]*vol \\\\+
-&\left[\frac{v_{max,A}*\left(\left[H_2 \right]-\left[H_2 \right]^* \right)}{Km_A + \left[H_2 \right]-\left[H_2 \right]^* }*\frac{X_{Acetogen}}{X_{i,Acetogen}} \right]*MW_{H_2}*Y_{Acetogen, H_2}
-\end{align}
-$$
-
-<br>
-$$
-\begin{align}
-\mathbf{\frac{dMethanogen}{dt}}=
-\left[\frac{µ_{max,A}*C_{Acetate}}{Ks_A+C_{Acetate}}*X_{Methanogen} \right]*vol +
-\left[\frac{v_{max,M}*\left(\left[H_2 \right]-\left[H_2 \right]^* \right)}{Km_M + \left[H_2 \right]-\left[H_2 \right]^* }*\frac{X_{Methanogen}}{X_{i,Methanogen}} \right]*MW_{H_2}*Y_{Methanogen, H_2}
-\end{align}
-$$
-
-<br>
+* Senior Design Project at Drexel University
+* Year: 2019, Team Name: *Frack Off*
+* Group Members: Kyle Barrett, Luke Growney, Prem Patel, Farhaan Rizvi
