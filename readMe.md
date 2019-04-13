@@ -1,6 +1,6 @@
 # Anaerobic Batch Reactor
 
-This app is associated with my senior design project in chemical engineering at Drexel University [^1]. 
+This app is associated with my senior design project in chemical engineering at Drexel University. 
 The model was developed to simulate the degradation of heavy organic compounds through anaerobic digestion. Five unique processes take place in the simulated batch reactor, including the enzymatic hydrolysis of guar gum, acidogenesis of polysaccharide chains, acetogensis, methanogenesis, and anaerobic degredation using bacteroides. See the `Background of Process` tab for a more detailed process description.
 
 ## Getting Started
@@ -32,9 +32,11 @@ Installing the above packages prior to running will speed up the initial loading
   
 ![Screenshot](Screenshot_modelParam.png)
 
+
   * Use the `Plots` tab to view a specific set of plots. Selections include *Main Components*,  *Intermediate Products*,  *Bacteria Growth*, and *Reactor Properties*.
   
 ![Screenshot](Screenshot_Plots.png)
+
 
   * Use the `Tables` tab to view the input and output concentrations. Selections include *Main Components*  and *Reactor Properties*.
  
@@ -47,6 +49,7 @@ Installing the above packages prior to running will speed up the initial loading
 ### Sensitivity Analysis
 
 Example of how to perform a sensitivity analysis on a given parameter:
+
 ![Screenshot](Screenshot_Sensitivity.png)
 
 
