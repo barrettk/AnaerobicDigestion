@@ -30,7 +30,7 @@ Installing the above packages prior to running will speed up the initial loading
 (Missing Petrolium distillates, Methanol, and Isopropanol) 
 
 
-![CMT Model](www/compartmentalModel.jpg)
+![CMT Model](www/compartmentalModel.png)
 
 ## Side Tabs in App
 
