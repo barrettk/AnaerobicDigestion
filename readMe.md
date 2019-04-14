@@ -26,6 +26,10 @@ if (length(new.pkg)) {
 ```
 Installing the above packages prior to running will speed up the initial loading by a lot. Make sure each of the packages can be loaded via `library()`.
 
+## Proposed Reaction Mechanisms involved in process
+
+![CMT Model](www/compartmentalModel.jpg)
+
 ## Side Tabs in App
 
   * Use the `Model Parameters` tab to adjust the model inputs. Clicking a category will open a separate menu with adjustable parameters. Click the category again to make the menu disappear. The `simulation` option will allow for a sensitivity analysis of a chosen parameter.
