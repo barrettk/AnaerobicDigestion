@@ -51,8 +51,9 @@ pre { /* Code block - determines code spacing between lines */
 
 # **Compartmental Model**
 <br>
-
-![plot of CMT Model](www/compartmentalModel.png)
+<p align="center">
+  <img src="www/compartmentalModel.png" alt="drawing" width="850" height="620"/>
+</p>
 
 # **Differential Equations**
 
