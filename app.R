@@ -1,7 +1,7 @@
 
 pkg <- c("shiny", "mrgsolve", "shinyAce", "shinydashboard", "dplyr", "knitr", "plyr", "tidyverse", 
          "wrapr", "extrafont", "polynom", "ggplot2", "shinyWidgets", "gridExtra", "rmarkdown", 
-         "markdown", "sn", "rlang", "lattice", "reshape", "reshape2", "magrittr", "stats")
+         "markdown", "sn", "rlang", "lattice", "reshape", "reshape2", "magrittr", "stats","reactlog")
 new.pkg <- pkg[!(pkg %in% installed.packages())]
 if (length(new.pkg)) {
   install.packages(new.pkg)
@@ -36,7 +36,9 @@ library(reshape,quietly = T)
 library(reshape2,quietly = T)
 library(polynom,quietly = T)
 library(magrittr,quietly = T)
-
+library(reactlog)
+# tell shiny to log all reactivity
+options(shiny.reactlog = TRUE)
 
 # Compile the model
 mod <- mrgsolve::mread("AnaerobicDigestionShinyV3.cpp")
