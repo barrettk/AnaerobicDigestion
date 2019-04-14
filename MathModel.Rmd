@@ -52,11 +52,7 @@ pre { /* Code block - determines code spacing between lines */
 # **Compartmental Model**
 <br>
 
-<center>
-
-![plot of CMT Model](www/compartmentalModel.jpg)
-
-</center>
+![plot of CMT Model](www/compartmentalModel.png)
 
 # **Differential Equations**
 
