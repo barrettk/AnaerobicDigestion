@@ -49,12 +49,23 @@ pre { /* Code block - determines code spacing between lines */
 }
 </style>
 
-## **Components Not Added Yet**: 
+# **Compartmental Model**
+<br>
+
+<center>
+
+![plot of CMT Model](www/compartmentalModel.jpg)
+
+</center>
+
+# **Differential Equations**
+
+### **Components Not Added Yet**
 
   * Petrolium distillates, methanol, and isopropanol are still in research stage
   * In addition to the above components, PEG-400 has not been added to the mathematical representation (this page) yet
 
-# **Hydrolysis of Guar Gum**: 
+## **Hydrolysis of Guar Gum**
 
 <br>
 
@@ -79,11 +90,11 @@ $$
      
 <br>
 
-# **Acidogenesis and Acetogenesis**: 
+## **Acidogenesis and Acetogenesis** 
 
 <br>
 
-## **Liquids**:
+### **Liquids**
 $$
 \mathbf{\frac{dEthanol}{dt}}= \left[Stoich \left(\frac{µ_{max,G}*C_{Glucose}}{Ks_G+C_{Glucose}}*\frac{X_{Acidogen}}{MW_{Glucose}*Y_{Acidogen,   G}} \right) -Stoich \left(\frac{µ_{max,E}*C_{Ethanol}}{Ks_E+C_{Ethanol}}*\frac{X_{Acetogen}}{MW_{Ethanol}*Y_{Acetogen, E}}\right) \right]*vol
 $$
@@ -126,7 +137,7 @@ Stoich \left(\frac{v_{max,M}*\left(\left[H_2 \right]-\left[H_2 \right]^* \right)
 $$
 <br>
 
-## **Gases**:
+### **Gases**
 
   *	Note: The following PDEs keep track of total moles, i.e. *Liquid* + *Gas*. The partitioning of moles into each phase are determined by Henry's constant, and is described following the differential equations.
 
@@ -169,7 +180,7 @@ $$
 
 
 
-## **Gas-Liquid Equilibrium**: 
+### **Gas-Liquid Equilibrium**
 
 $$
 \begin{align}
@@ -196,7 +207,7 @@ $$
 
 <br>
 
-# **Methanogenesis**: 
+## **Methanogenesis**
 
 <br>
 
@@ -206,7 +217,7 @@ Stoich \left(\frac{v_{max,M}*\left(\left[H_2 \right]-\left[H_2 \right]^* \right)
 $$
 <br>
 
-## **Gas-Liquid Equilibrium**: 
+### **Gas-Liquid Equilibrium** 
 
 <br>
 $$
@@ -222,7 +233,8 @@ $$
 \mathbf{CH_4 (Liq)}=P_{CH_4}*Henry_{CH_4}*vol
 $$
 <br>
-# **Bacteria Growth**: 
+
+## **Bacteria Growth** 
 
 <br>
 $$
