@@ -27,6 +27,8 @@ if (length(new.pkg)) {
 Installing the above packages prior to running will speed up the initial loading by a lot. Make sure each of the packages can be loaded via `library()`.
 
 ## Proposed Reaction Mechanisms involved in process
+(Missing Petrolium distillates, Methanol, and Isopropanol) 
+
 
 ![CMT Model](www/compartmentalModel.jpg)
 
