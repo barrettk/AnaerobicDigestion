@@ -27,7 +27,14 @@ if (length(new.pkg)) {
 Installing the above packages prior to running will speed up the initial loading by a lot. Make sure each of the packages can be loaded via `library()`.
 
 ## Proposed Reaction Mechanisms involved in process
-(Missing Petrolium distillates, Methanol, and Isopropanol) 
+
+Contaminants being converted in bioreactor:
+- Guar Gum
+- PEG 400
+- Methanol & Isopropanol
+- Petrolium Distillates
+
+(Missing Petrolium distillates and Isopropanol from model and mechanism) 
 
 
 ![CMT Model](www/compartmentalModel.png)
