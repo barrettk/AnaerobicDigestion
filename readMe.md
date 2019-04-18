@@ -29,10 +29,10 @@ Installing the above packages prior to running will speed up the initial loading
 ## Proposed Reaction Mechanisms involved in process
 
 Contaminants being converted in bioreactor:
-- Guar Gum
-- PEG 400
-- Methanol & Isopropanol
-- Petrolium Distillates
+- Guar Gum (Brown)
+- PEG 400 (Red)
+- Methanol (Yellow) & Isopropanol (Not shown)
+- Petrolium Distillates (Not shown)
 
 (Missing Petrolium distillates and Isopropanol from model and mechanism) 
 
