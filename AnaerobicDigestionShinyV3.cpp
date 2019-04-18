@@ -20,6 +20,8 @@ $PARAM
   WT_Perc_Water_IN = 0.875
   WT_Perc_Guar_IN = 0.0083
   WT_Perc_PEG_IN = 0.004
+  WT_Perc_MeOL_IN = 0.004
+  WT_Perc_ISO_IN = 0.004
   Conc_Hydro_Enzyme = 0.0002
   
   MW_PEG_In = 400
@@ -90,6 +92,8 @@ $FIXED
   MW_CO2 = 44
   MW_CH4 = 16
   MW_H2O = 18
+  MW_methanol = 32
+  MW_isopropanol = 60
   //MW_PEG400 = 400 // 380-420
 
   // Cleavable Bonds per mole guar gum: Guar Gum MW/Glucose MW (1,200,000/180 = 6666.667 ~ 6500)
@@ -145,6 +149,8 @@ $CMT @annotated
   DEG                 : PEG-2 (~PEG 106 - moles)
   EG                  : Ethylene Glycol (moles)
   Acetaldehyde        : Acetaldehyde (moles)
+  
+  METHANOL            : Methanol (moles)
   
   ACIDOGEN            : Acidogen Growth (grams)
   ACETOGEN            : Acetogen Growth (grams)
@@ -205,6 +211,8 @@ $MAIN
   double guar_IN = (WT_Perc_Guar_IN*mass_flow_per_well*453.6*wells*Day_Mult)/MW_guar; // mol/h or mole
   double water_IN = (WT_Perc_Water_IN*mass_flow_per_well*453.6*wells*Day_Mult)/MW_H2O; //mol/h or mole
   double PEG_IN = (WT_Perc_PEG_IN*mass_flow_per_well*453.6*wells*Day_Mult)/MW_PEG_In; //mol/h or mole
+  double MeOL_IN = (WT_Perc_MeOL_IN*mass_flow_per_well*453.6*wells*Day_Mult)/MW_methanol; //mol/h or mole
+  double ISO_IN = (WT_Perc_ISO_IN*mass_flow_per_well*453.6*wells*Day_Mult)/MW_isopropanol; //mol/h or mole
   // Volumes (L)
   double vol_guar_IN = (guar_IN*MW_guar/Density_guar)/1000;
   double vol_water_IN = (water_IN*MW_H2O/Density_Water)/1000;
@@ -335,6 +343,11 @@ $MAIN
   double Ks_acet_Meth = abs((0.3/MW_acetate)*exp(Eta_Ks_Acet));  //also (58/1000)/MW_acetate or 0.3/MW_acetate or (20.51e-3) or 0.0208 or (0.13*10^-3)*MW_acetate 
   double Y_Meth_Acet = abs((0.06)*exp(Eta_Y_Acet)); // g Biomass/g Substrate also 3.295/MW_acetate 
   
+  // Methanol Kinetic Parameters
+  double Umax_methanol = abs(0.245*exp(Eta_Umax_Acet)); //(1/h) also 0.44/24 or 0.138;
+  double Ks_methanol = abs((42/1000)*exp(Eta_Ks_Acet));  //also (58/1000)/MW_acetate or 0.3/MW_acetate or (20.51e-3) or 0.0208 or (0.13*10^-3)*MW_acetate 
+  double Y_methanol = abs((0.437)*exp(Eta_Y_Acet)); // g Biomass/g Substrate also 3.295/MW_acetate  
+  
   // Method 2: Michaelis-Menten
   // Uses Kinetic Data Import From Bacteria_kinetics.R
   // For Reaction: CO2 + 4H2 → CH4 + 2H2O ---> Recast ---> (1/4)CO2 + H2 → (1/4)CH4 + (2/4)H2O
@@ -434,6 +447,8 @@ $ODE
   double Conc_DEG = DEG/vol;
   double Conc_EG = EG/vol;
   double Conc_AcetHyde = Acetaldehyde/vol;
+  // Alcohols
+  double Conc_METHANOL = METHANOL/vol;
   // Bacteria
   double Conc_ACIDOGEN = ACIDOGEN/vol;
   double Conc_ACETOGEN = ACETOGEN/vol;
@@ -441,7 +456,7 @@ $ODE
   double Conc_BACTEROID = BACTEROID/vol;
   double C_TOT = Conc_GUAR/n_bonds + Conc_GLUCOSE + Conc_ETHANOL + Conc_PropAcid + Conc_CO2 + Conc_H2 +
     Conc_ACETATE + Conc_CH4 + Conc_H2O + Conc_PEG3 + Conc_PEG4 + Conc_PEG5 + Conc_PEG6 + Conc_PEG7 +
-    Conc_PEG8 + Conc_PEG9 + Conc_DEG + Conc_EG + Conc_AcetHyde;
+    Conc_PEG8 + Conc_PEG9 + Conc_DEG + Conc_EG + Conc_AcetHyde + Conc_METHANOL;
   
   // Rates
   
@@ -494,7 +509,10 @@ $ODE
   
   // Methanogenesis (Growth rates per substrate)
   // Method 1
+  // Acetate
   double U_Meth_Acet = (Umax_acet_Meth * Conc_ACETATE) / (Ks_acet_Meth + Conc_ACETATE);
+  // Alcholols
+  double U_METHANOL = (Umax_methanol * Conc_METHANOL) / (Ks_methanol + Conc_METHANOL);
   // Method 2
   double vmax_Meth = param_fn::Meth_vmax(Temp2,Intercept_Meth_vmax,a_Meth_vmax,b_Meth_vmax,c_Meth_vmax); // nmol/h
   double km_Meth = param_fn::Meth_km(Temp2,Intercept_Meth_km,a_Meth_km,b_Meth_km,c_Meth_km); // Pa
@@ -547,6 +565,8 @@ $ODE
     Rate_PEG7*Conc_BACTEROID/(MW_PEG_7*Y_PEG_9) + Rate_PEG6*Conc_BACTEROID/(MW_PEG_6*Y_PEG_9) +
     Rate_PEG5*Conc_BACTEROID/(MW_PEG_5*Y_PEG_9) + Rate_PEG4*Conc_BACTEROID/(MW_PEG_4*Y_PEG_9) +
     Rate_PEG3*Conc_BACTEROID/(MW_PEG_3*Y_PEG_9) - Rate_AcetHyde*Conc_BACTEROID/(MW_AcetHyde*Y_AcetHyde)) * vol;
+  // Alcohols (mol/h)
+  dxdt_METHANOL = (-U_METHANOL*Conc_METHANOGEN/(MW_methanol*Y_methanol))*vol;
   
   // Bacteroides Degradation (g/h)
   dxdt_BACTEROID = (Rate_PEG9*Conc_BACTEROID + Rate_PEG8*Conc_BACTEROID + Rate_PEG7*Conc_BACTEROID + Rate_PEG6*Conc_BACTEROID +
@@ -572,7 +592,7 @@ $ODE
   
   dxdt_H2O = Flow * (Conc_water_IN - Conc_H2O) - ((U_Aceto_Eth*Conc_ACETOGEN/(MW_ethanol*Y_Aceto_eth))*2 -
     (U_Aceto_PropA*Conc_ACETOGEN/(MW_propA*Y_Aceto_propA))*3 - Rate_DEG*Conc_ACETOGEN/(MW_DEG*Y_DEG) -
-    Rate_AcetHyde*Conc_BACTEROID/(MW_AcetHyde*Y_AcetHyde)) * vol + 
+    Rate_AcetHyde*Conc_BACTEROID/(MW_AcetHyde*Y_AcetHyde) + (U_METHANOL*Conc_METHANOGEN/(MW_methanol*Y_methanol))) * vol + 
     (Aceto_H2*Conc_ACETOGEN)/2 + (Meth_H2*Conc_METHANOGEN)/2;
   
   // Methanogenesis (g/h)
@@ -587,9 +607,11 @@ $ODE
   
   dxdt_H2_TOT = (-(U_Acido_Glucose*Conc_ACIDOGEN/(MW_glucose*Y_Acido_Glucose))*2 + (U_Aceto_Eth*Conc_ACETOGEN/(Y_Aceto_eth*MW_ethanol))*3 + 
     (U_Aceto_PropA*Conc_ACETOGEN/(MW_acetate*Y_Aceto_propA)*3) + (Rate_EG*Conc_ACETOGEN/(MW_EG*Y_EG)) + 
-    (Rate_DEG*Conc_ACETOGEN/(MW_DEG*Y_DEG))*2) * vol - Meth_H2_gas*Conc_METHANOGEN - Aceto_H2_gas*Conc_ACETOGEN; 
+    (Rate_DEG*Conc_ACETOGEN/(MW_DEG*Y_DEG))*2-(U_METHANOL*Conc_METHANOGEN/(MW_methanol*Y_methanol))) * vol - 
+    Meth_H2_gas*Conc_METHANOGEN - Aceto_H2_gas*Conc_ACETOGEN; 
   
-  dxdt_CH4_TOT =(U_Meth_Acet*Conc_METHANOGEN/(MW_acetate*Y_Meth_Acet)) * vol + (Meth_H2_gas*Conc_METHANOGEN)/4;
+  dxdt_CH4_TOT =((U_Meth_Acet*Conc_METHANOGEN/(MW_acetate*Y_Meth_Acet)) + (U_METHANOL*Conc_METHANOGEN/(MW_methanol*Y_methanol))) * vol + 
+    (Meth_H2_gas*Conc_METHANOGEN)/4;
   
   // Components: Final Products (Biogas) (mol)
   double CO2_GAS = CO2_TOT/(1+(R_coeff*TempK*Henry_CO2*vol/Head_Space_VTOT));
@@ -631,7 +653,7 @@ $ODE
 $CAPTURE PEG_IN V_TOT Pressure_atm GUAR_Conc Conc_GLUCOSE Conc_ACIDOGEN Conc_ETHANOL Conc_PropAcid 
   Conc_ACETOGEN Conc_ACETATE Conc_METHANOGEN H2_LIQ H2_GAS CO2_LIQ CO2_GAS CH4_GAS CH4_LIQ 
   Conc_BACTEROID Conc_PEG9 Conc_PEG8 Conc_PEG7 Conc_PEG6 Conc_PEG5 Conc_PEG4 Conc_PEG3 Conc_DEG Conc_EG
-  Conc_AcetHyde AVG_PEG_MW
+  Conc_AcetHyde AVG_PEG_MW Conc_METHANOL
     
 $SET //req = s_(GUAR, H2_TOT, H2O)
 
