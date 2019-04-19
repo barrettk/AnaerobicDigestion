@@ -87,4 +87,3 @@ Example of how to perform a sensitivity analysis on a given parameter:
 [^1]: Credit:
 
     Year: 2019, Team Name: "Frack Off", Senior Design Project at Drexel University
-    Group Members: Kyle Barrett, Luke Growney, Prem Patel, Farhaan Rizvi
