@@ -21,7 +21,7 @@ pkg <- c("shiny", "mrgsolve", "shinyAce", "shinydashboard", "dplyr", "knitr", "p
          "markdown", "sn", "rlang", "lattice", "reshape", "reshape2", "magrittr", "stats","reactlog")
 new.pkg <- pkg[!(pkg %in% installed.packages())]
 if (length(new.pkg)) {
-  install.packages(new.pkg)
+  install.packages(new.pkg,dependencies=T)
 }
 ```
 Installing the above packages prior to running will speed up the initial loading by a lot. Make sure each of the packages can be loaded via `library()`.
