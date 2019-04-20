@@ -283,12 +283,14 @@ server <- function(input, output,session) {
     shiny::req(omega_Kinetics())
     shiny::req(omega_Yields())
     shiny::req(pars())
-    cutOffTime <- as.numeric(input[["cutOff"]])
+    cutOffTime <- isolate(as.numeric(input[["cutOff"]]))
     nSim <- as.numeric(input[["nSim"]])
     simType <- as.character(input[["simType"]])
-    T1 <- TimeSolv()
+    T1 <- isolate(TimeSolv())
     # If Normal Simulation
     if(simType=="Normal"){
+      Bact_kinetics <- isolate(omega_Kinetics())
+      Bact_yields <- isolate(omega_Yields())
       prog <- 20
       withProgress(message = 'Compiling and Simulating Model',
                    detail = paste('This may take a while...',prog,"%"), value = 20, max=100,
@@ -296,7 +298,7 @@ server <- function(input, output,session) {
       Normal_Sim <- function(pars,T1,cutOffTime,nSim){
         hmax=0.01; maxsteps=60000; prog <- 20
       repeat{
-        outDat <- try({mod %>% param(pars) %>% omat(Bact_kinetics=omega_Kinetics(),Bact_yields=omega_Yields()) %>% 
+        outDat <- try({mod %>% param(pars) %>% omat(Bact_kinetics=Bact_kinetics,Bact_yields=Bact_yields) %>% 
           mrgsim(nid=nSim,tgrid=T1,end=cutOffTime,atol = 1E-10,maxsteps=maxsteps,hmax = hmax)},silent = T)
         if (length(names(outDat)) >10 | maxsteps >= 210000){
           prog <- 100
@@ -309,10 +311,13 @@ server <- function(input, output,session) {
       }
        return(outDat) 
       }
-      outDat <- Normal_Sim(pars(),T1,cutOffTime,nSim) }) #End progress bar
+      pars <- isolate(pars())
+      outDat <- Normal_Sim(pars,T1,cutOffTime,nSim) }) #End progress bar
     # If Sensitivity Analysis
     }else if(simType=="Sensitivity Analysis"){
       shiny::req(input[["SensParam"]])
+      Bact_kinetics <- isolate(omega_Kinetics())
+      Bact_yields <- isolate(omega_Yields())
       SensParam <- SensParam() %>% as.character()
       SensVals <- SensRangeR() %>% as.numeric()
       prog <- 20
@@ -328,7 +333,7 @@ server <- function(input, output,session) {
             wrapr::let(
               c(SensParam2=substitute(SensParam)),{ 
                 datafile2 <- rlang::expr(expand.ev(SensParam2=sort(rep(SensVals,nSim)))) %>% rlang::eval_tidy()
-                rlang::expr(mod %>% idata_set(datafile2) %>% omat(Bact_kinetics=omega_Kinetics(),Bact_yields=omega_Yields()) %>% carry.out(SensParam2) %>% 
+                rlang::expr(mod %>% idata_set(datafile2) %>% omat(Bact_kinetics=Bact_kinetics,Bact_yields=Bact_yields) %>% carry.out(SensParam2) %>% 
                               mrgsim(end=cutOffTime,tgrid=T1,atol = 1E-10,maxsteps=maxsteps,hmax = hmax)) %>% rlang::eval_tidy()})
           }
           outDat <- try({solveModel(SensParam,T1,cutOffTime,nSim,SensVals)},silent = T)
