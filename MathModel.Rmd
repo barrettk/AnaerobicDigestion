@@ -55,12 +55,12 @@ pre { /* Code block - determines code spacing between lines */
   <img src="www/compartmentalModel.png" alt="drawing" width="850" height="620"/>
 </p>
 
-# **Differential Equations**
+# **Differential Equations (Guar Gum Only)**
 
 ### **Components Not Added Yet**
 
-  * Petrolium distillates, methanol, and isopropanol are still in research stage
-  * In addition to the above components, PEG-400 has not been added to the mathematical representation (this page) yet
+  * Petrolium distillates is still in research stage
+  * Only the differential equations for guar gum are provided mathematically. See the model file for the rest.
 
 ## **Hydrolysis of Guar Gum**
 

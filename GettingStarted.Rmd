@@ -67,8 +67,8 @@ The Contaminants being degraded in this unit include:
   * **Guar Gum** *(Done)*
   * **PEG-400** *(Done)*
   * Petrolium Distillates
-  * Methanol *(Research Stage)*
-  * Isopropanol *(Research Stage)*
+  * **Methanol** *(Done)*
+  * **Isopropanol** *(Done)*
 
 <br>
 # **What the App Does**
@@ -109,13 +109,13 @@ Below is a rough illustration of how the app works evaluates reactive objects as
 
 ## **Features Coming Soon** 
 
-  * Addition of petrolium distillates, methanol, and isopropanol to the model
+  * Addition of petrolium distillates to the model
   * Temperature Optimization --> most likely piecewise function
-  * Visual Representation of model
+  * More surface level visual representation of model
   
 ## **Potential Upcoming Features** 
 
-  * Expected Revenue Plots
+  * Thermodynamic model (Gibbs free energy dependence on reactions)
   * Optimization of other reactor settings
   
 <br>
