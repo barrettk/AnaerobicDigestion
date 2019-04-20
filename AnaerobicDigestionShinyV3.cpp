@@ -194,7 +194,11 @@ $OMEGA @name Bact_yields @annotated
   
   Eta_Y_Acet   : 0.01 : ETA on Yield of Acetate
   
-  Eta_Y_PEG   : 0.01 : ETA on Yield of PEG structures
+  Eta_Y_PEG    : 0.01 : ETA on Yield of PEG structures
+  
+  Eta_Y_MeOL   : 0.01 : ETA on Yield of Isopropanol
+  
+  Eta_Y_ISO    : 0.01 : ETA on Yield of Isopropanol
   
 $MAIN
   
@@ -254,7 +258,7 @@ $MAIN
   int MW_AcetHyde = 44;
   // Kcat's
   double kcat_PEG_9 = 0.264/140 * exp(Eta_Kcat_PEG);
-  double kcat_DEG = 0.035/30 * exp(Eta_Kcat_PEG);
+  double kcat_DEG = 0.035/30;
   // Interpolate for others
   double Intercept = (kcat_PEG_9-((kcat_PEG_9-kcat_DEG)/(9-2))*9);
   double kcat_PEG_8 = ((kcat_PEG_9-kcat_DEG)/(9-2))*8 + Intercept;
@@ -269,7 +273,7 @@ $MAIN
   // Km's
   double km_PEG_22 = abs(0.0016 * exp(Eta_Km_PEG));
   double km_PEG_9 = abs(0.0007 * exp(Eta_Km_PEG));
-  double km_DEG = abs(0.0065 * exp(Eta_Km_PEG));
+  double km_DEG = abs(0.0065);
   double km_EG = abs(0.005 * exp(Eta_Km_PEG));
   double km_AcetHyde = abs(0.002 * exp(Eta_Km_PEG)); //come back later
   // Yields
@@ -354,14 +358,14 @@ $MAIN
   // Methanol Kinetic Parameters
   double Kcat_methanol = abs(0.002*exp(Eta_Kcat_MeOL)); //(1/h)
   double Ks_methanol = 20/1000; 
-  double Y_methanol_X = (16/MW_methanol)/2; // g Biomass/g Substrate 
+  double Y_methanol_X = abs(((16/MW_methanol)/2)*exp(Eta_Y_MeOL)); // g Biomass/g Substrate 
   double Y_H2_methanol_X = (16/MW_methanol)/2; // g Biomass/g Substrate 
   double Y_CH4_methanol = 0.85/2; //mol methane/mol methanol
   double Y_H2O_methanol = 0.85/2; //mol methane/mol methanol
   // Isopropanol Kinetic Parameters
   double Kcat_isopropanol = abs(0.0009*exp(Eta_Kcat_ISO)); //(1/h)
   double Ks_isopropanol = 40/1000; 
-  double Y_isopropanol_X = (1.6/MW_isopropanol); // g Biomass/g Substrate 
+  double Y_isopropanol_X = abs((1.6/MW_isopropanol)*exp(Eta_Y_ISO)); // g Biomass/g Substrate 
   double Y_H2_isopropanol_X = (1.6/MW_isopropanol)/5; // g Biomass/g Substrate 
   double Y_CH4_isopropanol = 0.85/2; //mol methane/mol methanol
   double Y_H2O_isopropanol = 0.85/2; //mol methane/mol methanol
