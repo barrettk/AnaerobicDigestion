@@ -37,7 +37,7 @@ $PARAM
   // Bacetria (vol_per_well/volFromPaper in Liters --> 810/(20/1000) = 40500)
   Bact_ScaleFact_Acido = 0.3 
   Bact_ScaleFact_Aceto = 3
-  Bact_ScaleFact_Meth = 3
+  Bact_ScaleFact_Meth = 0.5
   Bact_ScaleFact_Bact = 0.3
 
 // Kinetic Data Import From Bacteria_kinetics.R
@@ -102,6 +102,8 @@ $FIXED
   Density_guar = 0.9 
   Density_Water = 1 
   Density_Peg400 = 1.128 
+  Density_Methanol = 0.791
+  Density_Isopropanol = 0.785
 
 
 $FIXED @annotated
@@ -151,6 +153,7 @@ $CMT @annotated
   Acetaldehyde        : Acetaldehyde (moles)
   
   METHANOL            : Methanol (moles)
+  ISOPROPANOL         : Isopropanol (moles)
   
   ACIDOGEN            : Acidogen Growth (grams)
   ACETOGEN            : Acetogen Growth (grams)
@@ -177,6 +180,9 @@ $OMEGA @name Bact_kinetics @annotated
   
   Eta_Kcat_PEG    : 0.05 : ETA on Kcat of PEG structures
   Eta_Km_PEG      : 0.05 : ETA on Km of PEG structures
+  
+  Eta_Kcat_MeOL   : 0.05 : ETA on Kcat of Methanol
+  Eta_Kcat_ISO    : 0.05 : ETA on Kcat of Isopropanol
  
 $OMEGA @name Bact_yields @annotated
   
@@ -217,7 +223,9 @@ $MAIN
   double vol_guar_IN = (guar_IN*MW_guar/Density_guar)/1000;
   double vol_water_IN = (water_IN*MW_H2O/Density_Water)/1000;
   double vol_peg_IN = (PEG_IN*MW_PEG_In/Density_Peg400)/1000;
-  double vol_Rest = vol - vol_guar_IN - vol_water_IN - vol_peg_IN;
+  double vol_methanol_IN = (MeOL_IN*MW_methanol/Density_Methanol)/1000;
+  double vol_ISO_IN = (ISO_IN*MW_isopropanol/Density_Isopropanol)/1000;
+  double vol_Rest = vol - vol_guar_IN - vol_water_IN - vol_peg_IN - vol_methanol_IN - vol_ISO_IN;
   
   
 // Hydrolysis of Guar Gum
@@ -344,10 +352,19 @@ $MAIN
   double Y_Meth_Acet = abs((0.06)*exp(Eta_Y_Acet)); // g Biomass/g Substrate also 3.295/MW_acetate 
   
   // Methanol Kinetic Parameters
-  double Umax_methanol = abs(0.245*exp(Eta_Umax_Acet)); //(1/h) also 0.44/24 or 0.138;
-  double Ks_methanol = abs((42/1000)*exp(Eta_Ks_Acet));  //also (58/1000)/MW_acetate or 0.3/MW_acetate or (20.51e-3) or 0.0208 or (0.13*10^-3)*MW_acetate 
-  double Y_methanol = abs((0.437)*exp(Eta_Y_Acet)); // g Biomass/g Substrate also 3.295/MW_acetate  
-  
+  double Kcat_methanol = abs(0.002*exp(Eta_Kcat_MeOL)); //(1/h)
+  double Ks_methanol = 20/1000; 
+  double Y_methanol_X = (16/MW_methanol)/2; // g Biomass/g Substrate 
+  double Y_H2_methanol_X = (16/MW_methanol)/2; // g Biomass/g Substrate 
+  double Y_CH4_methanol = 0.85/2; //mol methane/mol methanol
+  double Y_H2O_methanol = 0.85/2; //mol methane/mol methanol
+  // Isopropanol Kinetic Parameters
+  double Kcat_isopropanol = abs(0.0009*exp(Eta_Kcat_ISO)); //(1/h)
+  double Ks_isopropanol = 40/1000; 
+  double Y_isopropanol_X = (1.6/MW_isopropanol); // g Biomass/g Substrate 
+  double Y_H2_isopropanol_X = (1.6/MW_isopropanol)/5; // g Biomass/g Substrate 
+  double Y_CH4_isopropanol = 0.85/2; //mol methane/mol methanol
+  double Y_H2O_isopropanol = 0.85/2; //mol methane/mol methanol
   // Method 2: Michaelis-Menten
   // Uses Kinetic Data Import From Bacteria_kinetics.R
   // For Reaction: CO2 + 4H2 → CH4 + 2H2O ---> Recast ---> (1/4)CO2 + H2 → (1/4)CH4 + (2/4)H2O
@@ -384,7 +401,7 @@ $MAIN
   x_adj_Meth = 0.3;
   
   // Reactor Control
-  if(BATCH==0){
+  if(BATCH==0){ // Not implemented
     double Flow = flow;
     // Concentrations (inflow in moles/h)
     double Conc_guar_IN = (guar_IN*n_bonds/Flow) ; // mol/L
@@ -399,6 +416,8 @@ $MAIN
     PEG_7_0 = PEG_IN*molFracPEG7; // mol
     PEG_6_0 = PEG_IN*molFracPEG6; // mol
     PEG_5_0 = PEG_IN*molFracPEG5; // mol
+    METHANOL_0 = MeOL_IN; // mol
+    ISOPROPANOL_0 = ISO_IN; // mol
   }
   
   // Temperature Control
@@ -449,6 +468,7 @@ $ODE
   double Conc_AcetHyde = Acetaldehyde/vol;
   // Alcohols
   double Conc_METHANOL = METHANOL/vol;
+  double Conc_ISOPROPANOL = ISOPROPANOL/vol;
   // Bacteria
   double Conc_ACIDOGEN = ACIDOGEN/vol;
   double Conc_ACETOGEN = ACETOGEN/vol;
@@ -456,7 +476,7 @@ $ODE
   double Conc_BACTEROID = BACTEROID/vol;
   double C_TOT = Conc_GUAR/n_bonds + Conc_GLUCOSE + Conc_ETHANOL + Conc_PropAcid + Conc_CO2 + Conc_H2 +
     Conc_ACETATE + Conc_CH4 + Conc_H2O + Conc_PEG3 + Conc_PEG4 + Conc_PEG5 + Conc_PEG6 + Conc_PEG7 +
-    Conc_PEG8 + Conc_PEG9 + Conc_DEG + Conc_EG + Conc_AcetHyde + Conc_METHANOL;
+    Conc_PEG8 + Conc_PEG9 + Conc_DEG + Conc_EG + Conc_AcetHyde + Conc_METHANOL + Conc_ISOPROPANOL;
   
   // Rates
   
@@ -512,7 +532,8 @@ $ODE
   // Acetate
   double U_Meth_Acet = (Umax_acet_Meth * Conc_ACETATE) / (Ks_acet_Meth + Conc_ACETATE);
   // Alcholols
-  double U_METHANOL = (Umax_methanol * Conc_METHANOL) / (Ks_methanol + Conc_METHANOL);
+  double Rate_METHANOL = Kcat_methanol*(Conc_METHANOL/(METHANOL_0/vol)) * (Conc_METHANOGEN/0.5) * (((H2_TOT/4)/(H2_TOT_0+1))/1250000)*25; //(Kcat_methanol * (Conc_METHANOL/(METHANOL_0/vol))) / ((Ks_methanol/(METHANOL_0/vol)) + (Conc_METHANOL/(METHANOL_0/vol)));
+  double Rate_ISOPROPANOL = Kcat_isopropanol*(Conc_ISOPROPANOL/(ISOPROPANOL_0/vol)) * (Conc_METHANOGEN/0.5) * (((H2_TOT/4)/(H2_TOT_0+1))/1250000)*25;
   // Method 2
   double vmax_Meth = param_fn::Meth_vmax(Temp2,Intercept_Meth_vmax,a_Meth_vmax,b_Meth_vmax,c_Meth_vmax); // nmol/h
   double km_Meth = param_fn::Meth_km(Temp2,Intercept_Meth_km,a_Meth_km,b_Meth_km,c_Meth_km); // Pa
@@ -566,8 +587,8 @@ $ODE
     Rate_PEG5*Conc_BACTEROID/(MW_PEG_5*Y_PEG_9) + Rate_PEG4*Conc_BACTEROID/(MW_PEG_4*Y_PEG_9) +
     Rate_PEG3*Conc_BACTEROID/(MW_PEG_3*Y_PEG_9) - Rate_AcetHyde*Conc_BACTEROID/(MW_AcetHyde*Y_AcetHyde)) * vol;
   // Alcohols (mol/h)
-  dxdt_METHANOL = (-U_METHANOL*Conc_METHANOGEN/(MW_methanol*Y_methanol))*vol;
-  
+  dxdt_METHANOL = (-Rate_METHANOL)*vol;
+  dxdt_ISOPROPANOL = (-Rate_ISOPROPANOL)*vol;
   // Bacteroides Degradation (g/h)
   dxdt_BACTEROID = (Rate_PEG9*Conc_BACTEROID + Rate_PEG8*Conc_BACTEROID + Rate_PEG7*Conc_BACTEROID + Rate_PEG6*Conc_BACTEROID +
     Rate_PEG5*Conc_BACTEROID + Rate_PEG4*Conc_BACTEROID + Rate_PEG3*Conc_BACTEROID + Rate_AcetHyde*Conc_BACTEROID) * vol;
@@ -592,13 +613,14 @@ $ODE
   
   dxdt_H2O = Flow * (Conc_water_IN - Conc_H2O) - ((U_Aceto_Eth*Conc_ACETOGEN/(MW_ethanol*Y_Aceto_eth))*2 -
     (U_Aceto_PropA*Conc_ACETOGEN/(MW_propA*Y_Aceto_propA))*3 - Rate_DEG*Conc_ACETOGEN/(MW_DEG*Y_DEG) -
-    Rate_AcetHyde*Conc_BACTEROID/(MW_AcetHyde*Y_AcetHyde) + (U_METHANOL*Conc_METHANOGEN/(MW_methanol*Y_methanol))) * vol + 
-    (Aceto_H2*Conc_ACETOGEN)/2 + (Meth_H2*Conc_METHANOGEN)/2;
+    Rate_AcetHyde*Conc_BACTEROID/(MW_AcetHyde*Y_AcetHyde) + (Rate_METHANOL*Y_H2O_methanol) + 
+    (Rate_ISOPROPANOL*Y_H2O_isopropanol)) * vol + (Aceto_H2*Conc_ACETOGEN)/2 + (Meth_H2*Conc_METHANOGEN)/2;
   
   // Methanogenesis (g/h)
   
   dxdt_METHANOGEN = Meth_H2*Conc_METHANOGEN*MW_H2*Y_H2_Ace + Meth_H2*Conc_METHANOGEN*MW_CO2*Y_CO2_Ace + 
-    (U_Meth_Acet*Conc_METHANOGEN) * vol;
+    (U_Meth_Acet*Conc_METHANOGEN + (Rate_METHANOL*Y_methanol_X/MW_methanol) + 
+    (Rate_ISOPROPANOL*Y_isopropanol_X/MW_isopropanol)) * vol;
   
   // Components: Final Products (Biogas) (mol/h)
   dxdt_CO2_TOT = ((U_Acido_Glucose*Conc_ACIDOGEN/(MW_glucose*Y_Acido_Glucose))*2 + (U_Acido_Glucose*Conc_ACIDOGEN/(MW_glucose*Y_Acido_Glucose))*2 +
@@ -607,11 +629,12 @@ $ODE
   
   dxdt_H2_TOT = (-(U_Acido_Glucose*Conc_ACIDOGEN/(MW_glucose*Y_Acido_Glucose))*2 + (U_Aceto_Eth*Conc_ACETOGEN/(Y_Aceto_eth*MW_ethanol))*3 + 
     (U_Aceto_PropA*Conc_ACETOGEN/(MW_acetate*Y_Aceto_propA)*3) + (Rate_EG*Conc_ACETOGEN/(MW_EG*Y_EG)) + 
-    (Rate_DEG*Conc_ACETOGEN/(MW_DEG*Y_DEG))*2-(U_METHANOL*Conc_METHANOGEN/(MW_methanol*Y_methanol))) * vol - 
+    (Rate_DEG*Conc_ACETOGEN/(MW_DEG*Y_DEG))*2 - (Rate_METHANOL*Y_H2_methanol_X/Y_methanol_X) -
+    (Rate_ISOPROPANOL*Y_H2_isopropanol_X/Y_isopropanol_X)*3) * vol - 
     Meth_H2_gas*Conc_METHANOGEN - Aceto_H2_gas*Conc_ACETOGEN; 
   
-  dxdt_CH4_TOT =((U_Meth_Acet*Conc_METHANOGEN/(MW_acetate*Y_Meth_Acet)) + (U_METHANOL*Conc_METHANOGEN/(MW_methanol*Y_methanol))) * vol + 
-    (Meth_H2_gas*Conc_METHANOGEN)/4;
+  dxdt_CH4_TOT =((U_Meth_Acet*Conc_METHANOGEN/(MW_acetate*Y_Meth_Acet)) + (Rate_METHANOL*Y_CH4_methanol) + 
+    (Rate_ISOPROPANOL*Y_CH4_isopropanol)*3) * vol + (Meth_H2_gas*Conc_METHANOGEN)/4;
   
   // Components: Final Products (Biogas) (mol)
   double CO2_GAS = CO2_TOT/(1+(R_coeff*TempK*Henry_CO2*vol/Head_Space_VTOT));
@@ -653,7 +676,7 @@ $ODE
 $CAPTURE PEG_IN V_TOT Pressure_atm GUAR_Conc Conc_GLUCOSE Conc_ACIDOGEN Conc_ETHANOL Conc_PropAcid 
   Conc_ACETOGEN Conc_ACETATE Conc_METHANOGEN H2_LIQ H2_GAS CO2_LIQ CO2_GAS CH4_GAS CH4_LIQ 
   Conc_BACTEROID Conc_PEG9 Conc_PEG8 Conc_PEG7 Conc_PEG6 Conc_PEG5 Conc_PEG4 Conc_PEG3 Conc_DEG Conc_EG
-  Conc_AcetHyde AVG_PEG_MW Conc_METHANOL
+  Conc_AcetHyde AVG_PEG_MW Conc_METHANOL Conc_ISOPROPANOL Rate_METHANOL Rate_ISOPROPANOL
     
 $SET //req = s_(GUAR, H2_TOT, H2O)
 

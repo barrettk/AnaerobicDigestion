@@ -18,7 +18,7 @@ suppressMessages(library(shinydashboard,quietly = T))
 library(shinyWidgets,quietly = T)
 suppressMessages(library(rsconnect,quietly = T))
 library(rmarkdown); library(markdown)
-library(knitr)
+library(knitr);  library(webshot)
 
 #Server Packages
 suppressMessages(library(plyr,quietly = T))
@@ -38,7 +38,7 @@ library(polynom,quietly = T)
 library(magrittr,quietly = T)
 library(reactlog)
 # tell shiny to log all reactivity
-options(shiny.reactlog = TRUE)
+#options(shiny.reactlog = TRUE)
 
 # Compile the model
 mod <- mrgsolve::mread("AnaerobicDigestionShinyV3.cpp")
@@ -47,13 +47,38 @@ mod <- mrgsolve::mread("AnaerobicDigestionShinyV3.cpp")
 source("Bacteria_kinetics.R",local=globalenv())
 .model <- paste(mrgsolve:::code(mod), collapse='\n')
 assign(".model",.model,envir = globalenv())
-SensChoices <- c("Acidogen Conc.","Acetogen Conc.","Methanogen Conc.","Bacteroid Conc.","Head Space Ratio","Temperature","Number of Wells","WT % of Guar Gum","WT % of PEG-400")
+SensChoices <- c("Acidogen Conc.","Acetogen Conc.","Methanogen Conc.","Bacteroid Conc.","Head Space Ratio","Temperature","Number of Wells","WT % of Guar Gum","WT % of PEG-400","WT % of Methanol","WT % of Isopropanol")
 
 
 # Server Code -------------------------------------------------------------
 
 server <- function(input, output,session) {
 
+  #Render ReadMe UI
+  rmdfiles <- c("MathModel.Rmd","GettingStarted.Rmd")
+  sapply(rmdfiles, knit, quiet = T)
+  output$markdownRM <- renderUI({
+    fluidPage(
+      #tags$head(HTML("<script type='text/x-mathjax-config'>MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: 'all'} } });</script>")),
+      #includeMarkdown("MathModel.Rmd")
+      #includeMarkdown(rmarkdown::render("MathModel.Rmd",'html_document'))
+      #HTML(markdown::markdownToHTML(knit('MathModel.Rmd', quiet = TRUE), fragment.only=TRUE))
+      withMathJax(includeMarkdown("MathModel.Rmd"))
+      #withMathJax(HTML(markdown::markdownToHTML(knit("MathModel.Rmd", quiet = TRUE), fragment.only=TRUE,title="Frack Off",header="Mathematical Model for Anaerobic Digestion")))
+    )
+  })
+  #Render GettingStarted UI
+  output$markdownGS <- renderUI({
+    fluidPage(
+      #tags$head(HTML("<script type='text/x-mathjax-config'>MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: 'all'} } });</script>")),
+      #includeMarkdown("MathModel.Rmd")
+      #includeMarkdown(rmarkdown::render("MathModel.Rmd",'html_document'))
+      #HTML(markdown::markdownToHTML(knit('MathModel.Rmd', quiet = TRUE), fragment.only=TRUE))
+      withMathJax(includeMarkdown("GettingStarted.Rmd"))
+      #withMathJax(HTML(markdown::markdownToHTML(knit("MathModel.Rmd", quiet = TRUE), fragment.only=TRUE,title="Frack Off",header="Mathematical Model for Anaerobic Digestion")))
+    )
+  })
+  
   mod <- mrgsolve::mread_cache("AnaerobicDigestionShinyV3.cpp")
   
   # Kinetic Data Import From Bacteria_kinetics.R
@@ -110,6 +135,7 @@ server <- function(input, output,session) {
   })
   
   pars <- reactive({
+    #invalidateLater(1000, session)
     shiny::req(PegDist())
     shiny::req(input[["Bact_ScaleFact_Aceto"]])
     shiny::req(input[["Bact_ScaleFact_Acido"]])
@@ -117,6 +143,8 @@ server <- function(input, output,session) {
     shiny::req(input[["Bact_ScaleFact_Bact"]])
     shiny::req(input[["WT_Perc_Guar_IN"]])
     shiny::req(input[["WT_Perc_PEG_IN"]])
+    shiny::req(input[["WT_Perc_MeOL_IN"]])
+    shiny::req(input[["WT_Perc_ISO_IN"]])
     shiny::req(input[["wells"]])
     shiny::req(input[["Temp"]])
     shiny::req(input[["Head_Space_VolRatio"]])
@@ -132,6 +160,8 @@ server <- function(input, output,session) {
             Bact_ScaleFact_Bact = (as.numeric(input[["Bact_ScaleFact_Bact"]])/1000),
             WT_Perc_Guar_IN = (as.numeric(input[["WT_Perc_Guar_IN"]]))/100,
             WT_Perc_PEG_IN = (as.numeric(input[["WT_Perc_PEG_IN"]]))/100,
+            WT_Perc_MeOL_IN = (as.numeric(input[["WT_Perc_MeOL_IN"]]))/100,
+            WT_Perc_ISO_IN = (as.numeric(input[["WT_Perc_ISO_IN"]]))/100,
             wells = as.numeric(input[["wells"]]),
             Temp = as.numeric(input[["Temp"]]),
             Head_Space_VolRatio = as.numeric(input[["Head_Space_VolRatio"]]),
@@ -175,6 +205,10 @@ server <- function(input, output,session) {
         SensParam2 <- "WT_Perc_Guar_IN"
       }else if(SensParam=="WT % of PEG-400"){
         SensParam2 <- "WT_Perc_PEG_IN"
+      }else if(SensParam=="WT % of Methanol"){
+        SensParam2 <- "WT_Perc_MeOL_IN"
+      }else if(SensParam=="WT % of Isopropanol"){
+        SensParam2 <- "WT_Perc_ISO_IN"
       }
       return(SensParam2)
     }else{
@@ -192,7 +226,7 @@ server <- function(input, output,session) {
       shiny::req(input[[SensParam]])
       MedVal <- as.numeric(input[[SensParam]])
       SensRange <- as.numeric(input[["SensRange"]])/100
-      if(SensParam=="WT_Perc_Guar_IN"|SensParam=="WT_Perc_PEG_IN"){
+      if(SensParam=="WT_Perc_Guar_IN"|SensParam=="WT_Perc_PEG_IN"|SensParam=="WT_Perc_MeOL_IN"|SensParam=="WT_Perc_ISO_IN"){
         MedVal <- MedVal/100
       }else if(SensParam=="Bact_ScaleFact_Acido"|SensParam=="Bact_ScaleFact_Aceto"|SensParam=="Bact_ScaleFact_Meth"|SensParam=="Bact_ScaleFact_Bact"){
         MedVal <- MedVal/1000
@@ -255,28 +289,80 @@ server <- function(input, output,session) {
     T1 <- TimeSolv()
     # If Normal Simulation
     if(simType=="Normal"){
-      outDat <- mod %>% param(pars()) %>% omat(Bact_kinetics=omega_Kinetics(),Bact_yields=omega_Yields()) %>% 
-        mrgsim(nid=nSim,tgrid=T1,end=cutOffTime,atol = 1E-50,maxsteps=50000,hmax = 0.01)
-
+      prog <- 20
+      withProgress(message = 'Compiling and Simulating Model',
+                   detail = paste('This may take a while...',prog,"%"), value = 20, max=100,
+                   {
+      Normal_Sim <- function(pars,T1,cutOffTime,nSim){
+        hmax=0.01; maxsteps=60000; prog <- 20
+      repeat{
+        outDat <- try({mod %>% param(pars) %>% omat(Bact_kinetics=omega_Kinetics(),Bact_yields=omega_Yields()) %>% 
+          mrgsim(nid=nSim,tgrid=T1,end=cutOffTime,atol = 1E-10,maxsteps=maxsteps,hmax = hmax)},silent = T)
+        if (length(names(outDat)) >10 | maxsteps >= 210000){
+          prog <- 100
+          setProgress(value = prog,detail = paste('This may take a while...',prog,"%"))
+          break} 
+        hmax <- 0.001
+        maxsteps <- maxsteps + 50000
+        prog <- prog + 20
+        setProgress(value = prog,detail = paste('This may take a while...',prog,"%"))
+      }
+       return(outDat) 
+      }
+      outDat <- Normal_Sim(pars(),T1,cutOffTime,nSim) }) #End progress bar
     # If Sensitivity Analysis
     }else if(simType=="Sensitivity Analysis"){
       shiny::req(input[["SensParam"]])
       SensParam <- SensParam() %>% as.character()
       SensVals <- SensRangeR() %>% as.numeric()
+      prog <- 20
+      withProgress(message = 'Compiling and Simulating Model',
+                   detail = paste('This may take a while...',prog,"%"), value = 20, max=100, 
+                   {
       #idata_set function
-      solveModel <- function(SensParam,T1,cutOffTime,nSim,SensVals){
-        SensParam <- qc(.(SensParam)) 
-        wrapr::let(
-          c(SensParam2=substitute(SensParam)),{ 
-            datafile2 <- rlang::expr(expand.ev(SensParam2=sort(rep(SensVals,nSim)))) %>% rlang::eval_tidy()
-            rlang::expr(mod %>% idata_set(datafile2) %>% omat(Bact_kinetics=omega_Kinetics(),Bact_yields=omega_Yields()) %>% carry.out(SensParam2) %>% 
-                          mrgsim(end=cutOffTime,tgrid=T1,atol = 1E-50,maxsteps=50000,hmax = 0.01)) %>% rlang::eval_tidy()})
+      Sensitivity_Sim <- function(T1,cutOffTime,nSim,SensVals){
+        hmax=0.01; maxsteps=60000
+        repeat{
+          solveModel <- function(SensParam,T1,cutOffTime,nSim,SensVals){
+            SensParam <- qc(.(SensParam)) 
+            wrapr::let(
+              c(SensParam2=substitute(SensParam)),{ 
+                datafile2 <- rlang::expr(expand.ev(SensParam2=sort(rep(SensVals,nSim)))) %>% rlang::eval_tidy()
+                rlang::expr(mod %>% idata_set(datafile2) %>% omat(Bact_kinetics=omega_Kinetics(),Bact_yields=omega_Yields()) %>% carry.out(SensParam2) %>% 
+                              mrgsim(end=cutOffTime,tgrid=T1,atol = 1E-10,maxsteps=maxsteps,hmax = hmax)) %>% rlang::eval_tidy()})
+          }
+          outDat <- try({solveModel(SensParam,T1,cutOffTime,nSim,SensVals)},silent = T)
+          if (length(names(outDat)) >10 | maxsteps >= 210000){
+            prog <- 100
+            setProgress(value = prog,detail = paste('This may take a while...',prog,"%"))
+            break} 
+          hmax <- 0.001
+          maxsteps <- maxsteps + 50000
+          prog <- prog + 20
+          setProgress(value = prog,detail = paste('This may take a while...',prog,"%"))
+        }
+        return(outDat) 
       }
-      outDat <- solveModel(SensParam,T1,cutOffTime,nSim,SensVals)
+      outDat <- Sensitivity_Sim(T1,cutOffTime,nSim,SensVals) }) #End progress bar
     }
     #assign("out",outDat,envir = globalenv())
     outDat
-  }) # End output
+  }) # End reactive
+  
+  observe(priority = 4,{
+    tmpOut <- out()
+    if(is.null(tmpOut) | length(names(tmpOut)) < 3){
+      sendSweetAlert(
+        session = session,
+        title = "Error: Model could not compile with chosen parameters",
+        text = tags$div(
+          p("Please choose a new set of parameters or decrease kinetic variability."),
+            p("The model will attempt to recompile once any parameter has been changed.")),
+        type = "error",
+        html = TRUE
+      )
+    }
+  })
   
   # observeEvent(c(input$resim1,input$resim2,input$resim3,input$resim4,
   #                input$resim5,input$resim6,input$resim7,input$simType),{
@@ -342,7 +428,7 @@ server <- function(input, output,session) {
       shiny::req(input[["simType"]])
       simType <- as.character(input[["simType"]])
       out <- out()
-      Inputs_Main <- c("H2O", "GUAR", "GUAR_Conc","Pressure_atm","AVG_PEG_MW")
+      Inputs_Main <- c("H2O", "GUAR", "GUAR_Conc","Conc_PEG9","Pressure_atm","AVG_PEG_MW","Conc_METHANOL","Conc_ISOPROPANOL")
       Outputs_Main <- c("H2O", "GUAR", "GUAR_Conc", "H2_GAS", "CO2_GAS", "CH4_GAS","H2_LIQ", "CO2_LIQ", "CH4_LIQ")
       varyParamClass <- varyParamClass() %>% as.character()
       varyParam <- varyParam() %>% as.character()#try({knobs(out)},silent=T)
@@ -350,7 +436,7 @@ server <- function(input, output,session) {
       if(simType=="Sensitivity Analysis"){
         shiny::req(input[["SensParam"]])
         SumDat <- out %>% dplyr::select(ID,time,varyParam,eval(Inputs_Main),eval(Outputs_Main)) %>% as.data.frame
-        if(varyParam=="WT_Perc_Guar_IN"|varyParam=="WT_Perc_PEG_IN"){
+        if(varyParam=="WT_Perc_Guar_IN"|varyParam=="WT_Perc_PEG_IN"|varyParam=="WT_Perc_MeOL_IN"|varyParam=="WT_Perc_ISO_IN"){
           SumDat[varyParam] <- round(SumDat[varyParam]*100,3)
         }
       }else{
@@ -363,7 +449,7 @@ server <- function(input, output,session) {
         }else if(SumDat$time[i]==cutOffTime){
           row.names(SumDat)[i] <- paste("Output", "ID =",SumDat$ID[i])}
         SumDat$TotalMol[i] <- SumDat$H2O[i]+SumDat$GUAR[i]+SumDat$H2_GAS[i]+SumDat$CO2_GAS[i]+
-          SumDat$CH4_GAS[i]+SumDat$H2_LIQ[i]+SumDat$CO2_LIQ[i]+SumDat$CH4_LIQ[i]
+          SumDat$CH4_GAS[i]+SumDat$H2_LIQ[i]+SumDat$CO2_LIQ[i]+SumDat$CH4_LIQ[i]+SumDat$CH4_LIQ[i]
       }
       SumDat$GUAR <- round(SumDat$GUAR/6600,3) #divide by n_bonds
       SumDat$H2_GAS <- round(SumDat$H2_GAS,3);SumDat$CO2_GAS <- round(SumDat$CO2_GAS,3)
@@ -371,14 +457,15 @@ server <- function(input, output,session) {
       SumDat2 <- SumDat %>% dplyr::select(everything(),-c(ID,time,H2_LIQ,CO2_LIQ,CH4_LIQ,TotalMol)) %>% 
         dplyr::rename("Guar Gum (mol)"=GUAR,"Guar Gum (g/L)"=GUAR_Conc, "H2 (mol-gas)"=H2_GAS,
                       "CO2 (mol-gas)"=CO2_GAS, "CH4 (mol-gas)"=CH4_GAS,"Total Pressure (atm)"=Pressure_atm,
-                      "Average PEG MW (g/mol)"=AVG_PEG_MW)
+                      "Average PEG MW (g/mol)"=AVG_PEG_MW,"PEG-9 (mol/L)"=Conc_PEG9,"Methanol (mol/L)"=Conc_METHANOL,
+                      "Isopropanol (mol/L)"=Conc_ISOPROPANOL)
       SumDat2$H2O <- round(SumDat2$H2O*18/1000,2); SumDat2 <- SumDat2 %>% dplyr::rename("Water (L)"=H2O)
       SumDat2$"Guar Gum (g/L)" <- round(SumDat2$"Guar Gum (g/L)",3)
       SumDat2$"Total Pressure (atm)" <- round(SumDat2$"Total Pressure (atm)",2)
       SumDat2$"Average PEG MW (g/mol)" <- round(SumDat2$"Average PEG MW (g/mol)",2)
       if(simType=="Normal" & n_distinct(out$ID)==1){
         row.names(SumDat2) <- c("Input","Output")}
-      SumDat_Chem <- SumDat2
+      SumDat_Chem <- SumDat2; SumDat_Chem <<- SumDat_Chem
       SumDat_Chem
       },rownames = TRUE)
    
@@ -399,7 +486,7 @@ server <- function(input, output,session) {
         shiny::req(input[["SensParam"]])
         varyParam <- varyParam %>% as.character()
         SumDat <- out %>% dplyr::select(ID,time,varyParam,eval(Inputs_Bact),eval(Outputs_Bact)) %>% as.data.frame
-        if(varyParam=="WT_Perc_Guar_IN"|varyParam=="WT_Perc_PEG_IN"){
+        if(varyParam=="WT_Perc_Guar_IN"|varyParam=="WT_Perc_PEG_IN"|varyParam=="WT_Perc_MeOL_IN"|varyParam=="WT_Perc_ISO_IN"){
           SumDat[varyParam] <- round(SumDat[varyParam]*100,3)
         }
       }else{
@@ -448,28 +535,36 @@ server <- function(input, output,session) {
     if(simType=="Sensitivity Analysis"){
       shiny::req(input[["SensParam"]])
       varyParam <- SensParam() %>% as.character()
-      MainProdDat <- out %>% dplyr::select(ID,time,varyParam,GUAR_Conc,AVG_PEG_MW,CH4_GAS, H2_GAS, CO2_GAS) %>%
-        dplyr::filter(time<=cutOffTime)  %>% dplyr::rename("Guar Gum (g/L)"=GUAR_Conc, "AVG PEG MW (g/mol)"=AVG_PEG_MW,
-                                                           "H2 (mol-gas)"=H2_GAS,"CO2 (mol-gas)"=CO2_GAS,"CH4 (mol-gas)"=CH4_GAS) %>% as.data.frame()
+      withProgress(message = 'Summarizing Data',
+                   detail = 'This may take a while...', value = 0, max=100, 
+                   {
+      MainProdDat <- out %>% dplyr::select(ID,time,varyParam,GUAR_Conc,AVG_PEG_MW,CH4_GAS, H2_GAS, CO2_GAS,Conc_METHANOL,Conc_ISOPROPANOL) %>%
+        dplyr::filter(time<=cutOffTime)  %>% dplyr::rename("Guar Gum (g/L)"=GUAR_Conc, "AVG PEG MW (g/mol)"=AVG_PEG_MW,"Methanol (mol/L)"=Conc_METHANOL,
+                                                           "Isopropanol (mol/L)"=Conc_ISOPROPANOL,"H2 (mol-gas)"=H2_GAS,"CO2 (mol-gas)"=CO2_GAS,
+                                                           "CH4 (mol-gas)"=CH4_GAS) %>% as.data.frame()
+      setProgress(20)
       IntermediateDat <- out %>% dplyr::select(ID,time,varyParam,GUAR_Conc,Conc_GLUCOSE,Conc_ETHANOL,Conc_PropAcid,Conc_ACETATE,CH4_GAS) %>%
         dplyr::filter(time<=cutOffTime)  %>% dplyr::rename("Guar Gum (g/L)"=GUAR_Conc,"CH4 (mol-gas)"=CH4_GAS, "Glucose (mol/L)"=Conc_GLUCOSE,
                                                            "Ethanol (mol/L)"=Conc_ETHANOL,"Propanoic Acid (mol/L)"=Conc_PropAcid,
                                                            "Acetate (mol/L)"=Conc_ACETATE) %>% as.data.frame()
+      setProgress(45)
       PEG_Dat <- out %>% dplyr::select(ID,time,varyParam,Conc_PEG9,Conc_PEG8,Conc_PEG7,Conc_PEG6,Conc_PEG5,Conc_PEG4,Conc_PEG3,Conc_DEG,Conc_EG,Conc_AcetHyde,Conc_ACETATE,CH4_GAS) %>%
         dplyr::filter(time<=cutOffTime)  %>% dplyr::rename("PEG-9 (mol/L)"=Conc_PEG9,"PEG-8 (mol/L)"=Conc_PEG8,"PEG-7 (mol/L)"=Conc_PEG7,
                                                            "PEG-6 (mol/L)"=Conc_PEG6,"PEG-5 (mol/L)"=Conc_PEG5,"PEG-4 (mol/L)"=Conc_PEG4,
                                                            "PEG-3 (mol/L)"=Conc_PEG3,"DEG (mol/L)"=Conc_DEG,"EG (mol/L)"=Conc_EG,
                                                            "Acetaldehyde (mol/L)"=Conc_AcetHyde, "Acetate (mol/L)"=Conc_ACETATE,
                                                            "CH4 (mol-gas)"=CH4_GAS) %>% as.data.frame()
+      setProgress(75)
       SystemDat <- out %>% dplyr::select(ID,time,varyParam,H2O,V_TOT,Pressure_atm,Temp2) %>% 
         dplyr::filter(time<=cutOffTime)  %>% dplyr::rename("Total Pressure (atm)"=Pressure_atm, 
                                                            "Liquid Volume (% Change)"=V_TOT,"Water (% Change)"=H2O,"Temperature (C)" = Temp2) %>% as.data.frame()
       SystemDat$"Liquid Volume (% Change)" <- (SystemDat$"Liquid Volume (% Change)"/SystemDat$"Liquid Volume (% Change)"[1])*100
       SystemDat$"Water (% Change)" <- (SystemDat$"Water (% Change)"/SystemDat$"Water (% Change)"[1])*100
+      setProgress(85)
       BacteriaDat <- out %>% dplyr::select(ID,time,varyParam,Conc_ACIDOGEN,Conc_ACETOGEN,Conc_METHANOGEN,Conc_BACTEROID) %>% 
         dplyr::filter(time<=cutOffTime)  %>% dplyr::rename("Acidogen Biomass (g/L)"=Conc_ACIDOGEN, "Acetogen Biomass (g/L)"=Conc_ACETOGEN,
                                                            "Methanogen Biomass (g/L)"=Conc_METHANOGEN,"Bacteroid Biomass (g/L)"=Conc_BACTEROID) %>% as.data.frame()
-      if(varyParam=="WT_Perc_Guar_IN"|varyParam=="WT_Perc_PEG_IN"){
+      if(varyParam=="WT_Perc_Guar_IN"|varyParam=="WT_Perc_PEG_IN"|varyParam=="WT_Perc_MeOL_IN"|varyParam=="WT_Perc_ISO_IN"){
         MainProdDat[varyParam] <- round(MainProdDat[varyParam]*100,3)
         IntermediateDat[varyParam] <- round(IntermediateDat[varyParam]*100,3)
         PEG_Dat[varyParam] <- round(PEG_Dat[varyParam]*100,3)
@@ -481,25 +576,35 @@ server <- function(input, output,session) {
       PEG_Dat <<- PEG_Dat
       SystemDat <<- SystemDat
       BacteriaDat <<- BacteriaDat
+      setProgress(100)
+                   })
     }else{
-      MainProdDat <- out %>% dplyr::select(ID,time,GUAR_Conc,AVG_PEG_MW,CH4_GAS, H2_GAS, CO2_GAS) %>%
-        dplyr::filter(time<=cutOffTime) %>% dplyr::rename("Guar Gum (g/L)"=GUAR_Conc, "AVG PEG MW (g/mol)"=AVG_PEG_MW,
-                                                           "H2 (mol-gas)"=H2_GAS,"CO2 (mol-gas)"=CO2_GAS,"CH4 (mol-gas)"=CH4_GAS) %>% as.data.frame()
+      withProgress(message = 'Summarizing Data',
+                   detail = 'This may take a while...', value = 0, max=100, 
+                   {
+      MainProdDat <- out %>% dplyr::select(ID,time,GUAR_Conc,AVG_PEG_MW,CH4_GAS, H2_GAS, CO2_GAS,Conc_METHANOL,Conc_ISOPROPANOL) %>%
+        dplyr::filter(time<=cutOffTime) %>% dplyr::rename("Guar Gum (g/L)"=GUAR_Conc, "AVG PEG MW (g/mol)"=AVG_PEG_MW,"Methanol (mol/L)"=Conc_METHANOL,
+                                                          "Isopropanol (mol/L)"=Conc_ISOPROPANOL,"H2 (mol-gas)"=H2_GAS,"CO2 (mol-gas)"=CO2_GAS,
+                                                          "CH4 (mol-gas)"=CH4_GAS) %>% as.data.frame()
+      setProgress(20)
       IntermediateDat <- out %>% dplyr::select(ID,time,GUAR_Conc,Conc_GLUCOSE,Conc_ETHANOL,Conc_PropAcid,Conc_ACETATE,CH4_GAS) %>%
         dplyr::filter(time<=cutOffTime) %>% dplyr::rename("Guar Gum (g/L)"=GUAR_Conc,"CH4 (mol-gas)"=CH4_GAS, "Glucose (mol/L)"=Conc_GLUCOSE,
                                                            "Ethanol (mol/L)"=Conc_ETHANOL,"Propanoic Acid (mol/L)"=Conc_PropAcid,
                                                            "Acetate (mol/L)"=Conc_ACETATE) %>% as.data.frame()
+      setProgress(45)
       PEG_Dat <- out %>% dplyr::select(ID,time,Conc_PEG9,Conc_PEG8,Conc_PEG7,Conc_PEG6,Conc_PEG5,Conc_PEG4,Conc_PEG3,Conc_DEG,Conc_EG,Conc_AcetHyde,Conc_ACETATE,CH4_GAS) %>%
         dplyr::filter(time<=cutOffTime) %>% dplyr::rename("PEG-9 (mol/L)"=Conc_PEG9,"PEG-8 (mol/L)"=Conc_PEG8,"PEG-7 (mol/L)"=Conc_PEG7,
                                                            "PEG-6 (mol/L)"=Conc_PEG6,"PEG-5 (mol/L)"=Conc_PEG5,"PEG-4 (mol/L)"=Conc_PEG4,
                                                            "PEG-3 (mol/L)"=Conc_PEG3,"DEG (mol/L)"=Conc_DEG,"EG (mol/L)"=Conc_EG,
                                                            "Acetaldehyde (mol/L)"=Conc_AcetHyde, "Acetate (mol/L)"=Conc_ACETATE,
                                                            "CH4 (mol-gas)"=CH4_GAS) %>% as.data.frame()
+      setProgress(75)
       SystemDat <- out %>% dplyr::select(ID,time,H2O,V_TOT,Pressure_atm,Temp2) %>% 
         dplyr::filter(time<=cutOffTime)  %>% dplyr::rename("Total Pressure (atm)"=Pressure_atm, 
                                                            "Liquid Volume (% Change)"=V_TOT,"Water (% Change)"=H2O,"Temperature (C)" = Temp2) %>% as.data.frame()
       SystemDat$"Liquid Volume (% Change)" <- (SystemDat$"Liquid Volume (% Change)"/SystemDat$"Liquid Volume (% Change)"[1])*100
       SystemDat$"Water (% Change)" <- (SystemDat$"Water (% Change)"/SystemDat$"Water (% Change)"[1])*100
+      setProgress(85)
       BacteriaDat <- out %>% dplyr::select(ID,time,Conc_ACIDOGEN,Conc_ACETOGEN,Conc_METHANOGEN,Conc_BACTEROID) %>% 
         dplyr::filter(time<=cutOffTime)  %>% dplyr::rename("Acidogen Biomass (g/L)"=Conc_ACIDOGEN, "Acetogen Biomass (g/L)"=Conc_ACETOGEN,
                                                            "Methanogen Biomass (g/L)"=Conc_METHANOGEN,"Bacteroid Biomass (g/L)"=Conc_BACTEROID) %>% as.data.frame()
@@ -508,6 +613,8 @@ server <- function(input, output,session) {
       PEG_Dat <<- PEG_Dat
       SystemDat <<- SystemDat
       BacteriaDat <<- BacteriaDat
+      setProgress(100)
+                   }) #End progress bar
     }
   }) #end observe
   
@@ -523,19 +630,25 @@ server <- function(input, output,session) {
     cutOffTime <- as.numeric(input[["cutOff"]]) #100 #hours (4.167 days)
     confInterval <- confInterval() %>% as.character()
     if(exists("SystemDat")){
+      prog <- 20
+      withProgress(message = 'Plotting System Data',
+                   detail = paste('This may take a while...',prog,"%"), value = 20, max=100, 
+                   { 
     #Sensitivity
     if(simType=="Sensitivity Analysis"){
       shiny::req(input[["SensParam"]])
       varyParam <- varyParam() %>% as.character()
+      SensParam <- as.character(input[["SensParam"]])
       colNames <- names(SystemDat)[4:length(SystemDat)]
       p1 <- vector("list",length = length(colNames)); names(p1) <- names(SystemDat)[4:length(SystemDat)]
-      colScale <- scale_color_discrete(name = eval(varyParam))
+      colScale <- scale_color_discrete(name = eval(SensParam))
       #Make Plot
       stdDevs <- yminVal <- ymaxVal <- yminE <- ymaxE <- p1
+      prog <- 30; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
       p1 <- lapply(1:length(colNames),function(i){
         stdDevsDat <- summarySE(data=SystemDat,measurevar = colNames[i],groupvars = c("time",varyParam)) %>% as.data.frame()
-        yminE <- stdDevsDat[,4] - stdDevsDat[,6]
-        ymaxE <- stdDevsDat[,4] + stdDevsDat[,6]
+        yminE <- stdDevsDat[,4] - stdDevsDat[,7]
+        ymaxE <- stdDevsDat[,4] + stdDevsDat[,7]
         yminVal <- round(min(yminE)-min(yminE)*.01,15)
         ymaxVal <- round(max(ymaxE)+max(ymaxE)*.015,15)
         yLimits <- c(yminVal, ymaxVal)
@@ -554,6 +667,7 @@ server <- function(input, output,session) {
             theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
         }
       })
+      prog <- 70; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
       #Single Simulation 
     }else if(simType=="Normal" & n_distinct(SystemDat$ID)==1){
       colNames <- names(SystemDat)[3:length(SystemDat)]
@@ -568,15 +682,17 @@ server <- function(input, output,session) {
             geom_point(color="red") + geom_hline(yintercept=0, size=0.6, color="black") + labs(x="Time (h)",y=i) + 
             geom_vline(xintercept=0, size=0.6, color="black") + scale_y_continuous(limits = c(yminVal, ymaxVal)) +
             theme(text=element_text(family="Times New Roman", face="bold", size=13))}
+      prog <- 70; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
       #Multiple Simulations
     }else if(simType=="Normal" & n_distinct(SystemDat$ID)!=1){
       colNames <- names(SystemDat)[3:length(SystemDat)]
       p1 <- vector("list",length = length(colNames)); names(p1) <- colNames
       stdDevs <- yminVal <- ymaxVal <- yminE <- ymaxE <- p1
+      prog <- 30; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
       p1 <- lapply(1:length(colNames),function(i){
         stdDevsDat <- summarySE(data=SystemDat,measurevar = colNames[i],groupvars = c("time")) %>% as.data.frame()
-        yminE <- stdDevsDat[,3] - stdDevsDat[,5]
-        ymaxE <- stdDevsDat[,3] + stdDevsDat[,5]
+        yminE <- stdDevsDat[,3] - stdDevsDat[,6]
+        ymaxE <- stdDevsDat[,3] + stdDevsDat[,6]
         yminVal <- round(min(yminE)-min(yminE)*.01,15)
         ymaxVal <- round(max(ymaxE)+max(ymaxE)*.015,15)
         yLimits <- c(yminVal, ymaxVal)
@@ -595,9 +711,12 @@ server <- function(input, output,session) {
             theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
         }
           })
+      prog <- 70; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
     }
     p1 <<- p1; Plot1 <- grid.arrange(grobs=p1,ncol=2); assign("Plot1",Plot1,envir = globalenv()) #; print(Plot1)
     grid.arrange(Plot1)
+    prog <- 100; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
+    }) #End progress bar
     }
   },res=110)
   
@@ -613,17 +732,25 @@ server <- function(input, output,session) {
     cutOffTime <- as.numeric(input[["cutOff"]]) #100 #hours (4.167 days)
     confInterval <- confInterval() %>% as.character()
     if(exists("MainProdDat")){
+      prog <- 20
+      withProgress(message = 'Plotting Main Product Data',
+                   detail = paste('This may take a while...',prog,"%"), value = 20, max=100, 
+                   { 
     #Sensitivity
     if(simType=="Sensitivity Analysis"){
+      shiny::req(input[["SensParam"]])
+      varyParam <- varyParam() %>% as.character()
+      SensParam <- as.character(input[["SensParam"]])
       colNames <- names(MainProdDat)[4:length(MainProdDat)]
       p2 <- vector("list",length = length(colNames)); names(p2) <- names(MainProdDat)[4:length(MainProdDat)]
-      colScale <- scale_color_discrete(name = eval(varyParam))
+      colScale <- scale_color_discrete(name = eval(SensParam))
       #Make Plot
       stdDevs <- yminVal <- ymaxVal <- yminE <- ymaxE <- p2
+      prog <- 30; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
       p2 <- lapply(1:length(colNames),function(i){
         stdDevsDat <- summarySE(data=MainProdDat,measurevar = colNames[i],groupvars = c("time",varyParam)) %>% as.data.frame()
-        yminE <- stdDevsDat[,4] - stdDevsDat[,6]
-        ymaxE <- stdDevsDat[,4] + stdDevsDat[,6]
+        yminE <- stdDevsDat[,4] - stdDevsDat[,7]
+        ymaxE <- stdDevsDat[,4] + stdDevsDat[,7]
         yminVal <- round(min(yminE)-min(yminE)*.01,15)
         ymaxVal <- round(max(ymaxE)+max(ymaxE)*.015,15)
         yLimits <- c(yminVal, ymaxVal)
@@ -642,6 +769,7 @@ server <- function(input, output,session) {
             theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
         }
       })
+      prog <- 70; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
       #Single Simulation 
     }else if(simType=="Normal" & n_distinct(MainProdDat$ID)==1){
       colNames <- names(MainProdDat)[3:length(MainProdDat)]
@@ -656,15 +784,17 @@ server <- function(input, output,session) {
           geom_point(color="red") + geom_hline(yintercept=0, size=0.6, color="black") + labs(x="Time (h)",y=i) + 
           geom_vline(xintercept=0, size=0.6, color="black") + scale_y_continuous(limits = c(yminVal, ymaxVal)) +
           theme(text=element_text(family="Times New Roman", face="bold", size=13))}
+      prog <- 70; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
       #Multiple Simulations
     }else if(simType=="Normal" & n_distinct(MainProdDat$ID)!=1){
       colNames <- names(MainProdDat)[3:length(MainProdDat)]
       p2 <- vector("list",length = length(colNames)); names(p2) <- colNames
       stdDevs <- yminVal <- ymaxVal <- yminE <- ymaxE <- p2
+      prog <- 30; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
       p2 <- lapply(1:length(colNames),function(i){
         stdDevsDat <- summarySE(data=MainProdDat,measurevar = colNames[i],groupvars = c("time")) %>% as.data.frame()
-        yminE <- stdDevsDat[,3] - stdDevsDat[,5]
-        ymaxE <- stdDevsDat[,3] + stdDevsDat[,5]
+        yminE <- stdDevsDat[,3] - stdDevsDat[,6]
+        ymaxE <- stdDevsDat[,3] + stdDevsDat[,6]
         yminVal <- round(min(yminE)-min(yminE)*.01,15)
         ymaxVal <- round(max(ymaxE)+max(ymaxE)*.015,15)
         yLimits <- c(yminVal, ymaxVal)
@@ -683,9 +813,12 @@ server <- function(input, output,session) {
             theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
         }
           })
+      prog <- 70; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
     }
     p2 <<- p2; Plot2 <- grid.arrange(grobs=p2,ncol=2); assign("Plot2",Plot2,envir = globalenv()) #; print(Plot2)
     grid.arrange(Plot2)
+    prog <- 100; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
+    }) #End progress bar
     }
   },res=110)
   
@@ -701,17 +834,25 @@ server <- function(input, output,session) {
     cutOffTime <- as.numeric(input[["cutOff"]]) #100 #hours (4.167 days)
     confInterval <- confInterval() %>% as.character()
     if(exists("IntermediateDat")){
+      prog <- 20
+      withProgress(message = 'Plotting Guar Gum Intermediate Data',
+                   detail = paste('This may take a while...',prog,"%"), value = 20, max=100, 
+                   { 
     #Sensitivity
     if(simType=="Sensitivity Analysis"){
+      shiny::req(input[["SensParam"]])
+      varyParam <- varyParam() %>% as.character()
+      SensParam <- as.character(input[["SensParam"]])
       colNames <- names(IntermediateDat)[4:length(IntermediateDat)]
       p3 <- vector("list",length = length(colNames)); names(p3) <- names(IntermediateDat)[4:length(IntermediateDat)]
-      colScale <- scale_color_discrete(name = eval(varyParam))
+      colScale <- scale_color_discrete(name = eval(SensParam))
       #Make Plot
       stdDevs <- yminVal <- ymaxVal <- yminE <- ymaxE <- p3
+      prog <- 30; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
       p3 <- lapply(1:length(colNames),function(i){
         stdDevsDat <- summarySE(data=IntermediateDat,measurevar = colNames[i],groupvars = c("time",varyParam)) %>% as.data.frame()
-        yminE <- stdDevsDat[,4] - stdDevsDat[,6]
-        ymaxE <- stdDevsDat[,4] + stdDevsDat[,6]
+        yminE <- stdDevsDat[,4] - stdDevsDat[,7]
+        ymaxE <- stdDevsDat[,4] + stdDevsDat[,7]
         yminVal <- round(min(yminE)-min(yminE)*.01,15)
         ymaxVal <- round(max(ymaxE)+max(ymaxE)*.015,15)
         yLimits <- c(yminVal, ymaxVal)
@@ -730,6 +871,7 @@ server <- function(input, output,session) {
             theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
         }
       })
+      prog <- 70; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
       #Single Simulation 
     }else if(simType=="Normal" & n_distinct(IntermediateDat$ID)==1){
       colNames <- names(IntermediateDat)[3:length(IntermediateDat)]
@@ -744,15 +886,17 @@ server <- function(input, output,session) {
           geom_point(color="red") + geom_hline(yintercept=0, size=0.6, color="black") + labs(x="Time (h)",y=i) + 
           geom_vline(xintercept=0, size=0.6, color="black") + scale_y_continuous(limits = c(yminVal, ymaxVal)) +
           theme(text=element_text(family="Times New Roman", face="bold", size=13))}
+      prog <- 70; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
       #Multiple Simulations
     }else if(simType=="Normal" & n_distinct(IntermediateDat$ID)!=1){
       colNames <- names(IntermediateDat)[3:length(IntermediateDat)]
       p3 <- vector("list",length = length(colNames)); names(p3) <- colNames
       stdDevs <- yminVal <- ymaxVal <- yminE <- ymaxE <- p3
+      prog <- 30; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
       p3 <- lapply(1:length(colNames),function(i){
         stdDevsDat <- summarySE(data=IntermediateDat,measurevar = colNames[i],groupvars = c("time")) %>% as.data.frame()
-        yminE <- stdDevsDat[,3] - stdDevsDat[,5]
-        ymaxE <- stdDevsDat[,3] + stdDevsDat[,5]
+        yminE <- stdDevsDat[,3] - stdDevsDat[,6]
+        ymaxE <- stdDevsDat[,3] + stdDevsDat[,6]
         yminVal <- round(min(yminE)-min(yminE)*.01,15)
         ymaxVal <- round(max(ymaxE)+max(ymaxE)*.015,15)
         yLimits <- c(yminVal, ymaxVal)
@@ -771,9 +915,12 @@ server <- function(input, output,session) {
             theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
         }
         })
+      prog <- 70; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
     }
     p3 <<- p3; Plot3 <- grid.arrange(grobs=p3,ncol=2); assign("Plot3",Plot3,envir = globalenv()) #; print(Plot3)
     grid.arrange(Plot3)
+    prog <- 100; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
+    }) #End progress bar
     }
   },res=110)
   
@@ -789,17 +936,25 @@ server <- function(input, output,session) {
     cutOffTime <- as.numeric(input[["cutOff"]]) #100 #hours (4.167 days)
     confInterval <- confInterval() %>% as.character()
     if(exists("PEG_Dat")){
+      prog <- 20
+      withProgress(message = 'Plotting PEG-400 Intermediate Data',
+                   detail = paste('This may take a while...',prog,"%"), value = 20, max=100, 
+                   { 
     #Sensitivity
     if(simType=="Sensitivity Analysis"){
+      shiny::req(input[["SensParam"]])
+      varyParam <- varyParam() %>% as.character()
+      SensParam <- as.character(input[["SensParam"]])
       colNames <- names(PEG_Dat)[4:length(PEG_Dat)]
       p4 <- vector("list",length = length(colNames)); names(p4) <- names(PEG_Dat)[4:length(PEG_Dat)]
-      colScale <- scale_color_discrete(name = eval(varyParam))
+      colScale <- scale_color_discrete(name = eval(SensParam))
       #Make Plot
       stdDevs <- yminVal <- ymaxVal <- yminE <- ymaxE <- p4
+      prog <- 30; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
       p4 <- lapply(1:length(colNames),function(i){
         stdDevsDat <- summarySE(data=PEG_Dat,measurevar = colNames[i],groupvars = c("time",varyParam)) %>% as.data.frame()
-        yminE <- stdDevsDat[,4] - stdDevsDat[,6]
-        ymaxE <- stdDevsDat[,4] + stdDevsDat[,6]
+        yminE <- stdDevsDat[,4] - stdDevsDat[,7]
+        ymaxE <- stdDevsDat[,4] + stdDevsDat[,7]
         yminVal <- round(min(yminE)-min(yminE)*.01,15)
         ymaxVal <- round(max(ymaxE)+max(ymaxE)*.015,15)
         yLimits <- c(yminVal, ymaxVal)
@@ -818,6 +973,7 @@ server <- function(input, output,session) {
             theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
         }
       })
+      prog <- 70; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
       #Single Simulation 
     }else if(simType=="Normal" & n_distinct(PEG_Dat$ID)==1){
       colNames <- names(PEG_Dat)[3:length(PEG_Dat)]
@@ -832,19 +988,21 @@ server <- function(input, output,session) {
           geom_point(color="red") + geom_hline(yintercept=0, size=0.6, color="black") + labs(x="Time (h)",y=i) + 
           geom_vline(xintercept=0, size=0.6, color="black") + scale_y_continuous(limits = c(yminVal, ymaxVal)) +
           theme(text=element_text(family="Times New Roman", face="bold", size=13))}
+      prog <- 70; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
       #Multiple Simulations
     }else if(simType=="Normal" & n_distinct(PEG_Dat$ID)!=1){
         PEG_Dat1 <- PEG_Dat %>% dplyr::select(everything(),-c("CH4 (mol-gas)")) %>% tidyr::gather(key=key,value=value,-ID,-time)
         PEG_Dat2 <- MainProdDat %>% dplyr::select(ID,time,"AVG PEG MW (g/mol)")
         stdDevsDat <- summarySE(data=PEG_Dat1,measurevar = "value",groupvars = c("key","time")) %>% as.data.frame()
         stdDevsDat2 <- summarySE(data=PEG_Dat2,measurevar = "AVG PEG MW (g/mol)",groupvars = c("time")) %>% as.data.frame()
-        yminE <- stdDevsDat[,4] - stdDevsDat[,6]; yminE2 <- stdDevsDat2[,3] - stdDevsDat2[,5]
-        ymaxE <- stdDevsDat[,4] + stdDevsDat[,6]; ymaxE2 <- stdDevsDat2[,3] + stdDevsDat2[,5]
+        yminE <- stdDevsDat[,4] - stdDevsDat[,7]; yminE2 <- stdDevsDat2[,3] - stdDevsDat2[,6]
+        ymaxE <- stdDevsDat[,4] + stdDevsDat[,7]; ymaxE2 <- stdDevsDat2[,3] + stdDevsDat2[,6]
         yminVal <- round(min(yminE)-min(yminE)*.01,15); yminVal2 <- round(min(yminE2)-min(yminE2)*.01,15)
         ymaxVal <- round(max(ymaxE)+max(ymaxE)*.015,15); ymaxVal2 <- round(max(ymaxE2)+max(ymaxE2)*.015,15)
         yLimits <- c(yminVal, ymaxVal); yLimits2 <- c(yminVal2, ymaxVal2)
         plotPoints <- unique(PEG_Dat1$key)
         p4 <- vector("list",length = 2); names(p4) <- c("Intermediate Products","AVG MW Weight")
+        prog <- 40; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
       #Make Plot
       if(confInterval=="Error Bars"){
         p4[[1]] <- ggplot(stdDevsDat, aes(y=value, x=time, group=key)) + scale_y_continuous(limits = yLimits) + 
@@ -872,6 +1030,7 @@ server <- function(input, output,session) {
           labs(x="Time (h)",y="Average PEG MW") + geom_vline(xintercept=0, size=0.6, color="black") + 
           theme(text=element_text(family="Times New Roman", face="bold", size=13))
       }
+        prog <- 70; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
         #p4[[1]] + geom_point(data=subset(PEG_Dat3[PEG_Dat3$key==plotPoints[1],]), color='black', shape=18, size=2)
     }
     p4 <<- p4;
@@ -881,6 +1040,8 @@ server <- function(input, output,session) {
       Plot4 <- grid.arrange(grobs=p4,ncol=2); assign("Plot4",Plot4,envir = globalenv())
     }
     grid.arrange(Plot4)
+    prog <- 100; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
+    }) #End progress bar
     }
   },res=110)
   
@@ -898,17 +1059,25 @@ server <- function(input, output,session) {
     cutOffTime <- as.numeric(input[["cutOff"]]) #100 #hours (4.167 days)
     confInterval <- confInterval() %>% as.character()
     if(exists("BacteriaDat")){
+      prog <- 20
+      withProgress(message = 'Plotting Bacteria Data',
+                   detail = paste('This may take a while...',prog,"%"), value = 20, max=100,
+                   { 
     #Sensitivity
     if(simType=="Sensitivity Analysis"){
+      shiny::req(input[["SensParam"]])
+      varyParam <- varyParam() %>% as.character()
+      SensParam <- as.character(input[["SensParam"]])
       colNames <- names(BacteriaDat)[4:length(BacteriaDat)]
       p5 <- vector("list",length = length(colNames)); names(p5) <- names(BacteriaDat)[4:length(BacteriaDat)]
-      colScale <- scale_color_discrete(name = eval(varyParam))
+      colScale <- scale_color_discrete(name = eval(SensParam))
       #Make Plot
       stdDevs <- yminVal <- ymaxVal <- yminE <- ymaxE <- p5
+      prog <- 30; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
       p5 <- lapply(1:length(colNames),function(i){
         stdDevsDat <- summarySE(data=BacteriaDat,measurevar = colNames[i],groupvars = c("time",varyParam)) %>% as.data.frame()
-        yminE <- stdDevsDat[,4] - stdDevsDat[,6]
-        ymaxE <- stdDevsDat[,4] + stdDevsDat[,6]
+        yminE <- stdDevsDat[,4] - stdDevsDat[,7]
+        ymaxE <- stdDevsDat[,4] + stdDevsDat[,7]
         yminVal <- round(min(yminE)-min(yminE)*.01,15)
         ymaxVal <- round(max(ymaxE)+max(ymaxE)*.015,15)
         yLimits <- c(yminVal, ymaxVal)
@@ -927,6 +1096,7 @@ server <- function(input, output,session) {
             theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
         }
       })
+      prog <- 70; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
       #Single Simulation 
     }else if(simType=="Normal" & n_distinct(BacteriaDat$ID)==1){
       colNames <- names(BacteriaDat)[3:length(BacteriaDat)]
@@ -941,15 +1111,17 @@ server <- function(input, output,session) {
           geom_point(color="red") + geom_hline(yintercept=0, size=0.6, color="black") + labs(x="Time (h)",y=i) + 
           geom_vline(xintercept=0, size=0.6, color="black") + scale_y_continuous(limits = c(yminVal, ymaxVal)) +
           theme(text=element_text(family="Times New Roman", face="bold", size=13))}
+      prog <- 70; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
       #Multiple Simulations
     }else if(simType=="Normal" & n_distinct(BacteriaDat$ID)!=1){
       colNames <- names(BacteriaDat)[3:length(BacteriaDat)]
       p5 <- vector("list",length = length(colNames)); names(p5) <- colNames
       stdDevs <- yminVal <- ymaxVal <- yminE <- ymaxE <- p5
+      prog <- 30; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
       p5 <- lapply(1:length(colNames),function(i){
         stdDevsDat <- summarySE(data=BacteriaDat,measurevar = colNames[i],groupvars = c("time")) %>% as.data.frame()
-        yminE <- stdDevsDat[,3] - stdDevsDat[,5]
-        ymaxE <- stdDevsDat[,3] + stdDevsDat[,5]
+        yminE <- stdDevsDat[,3] - stdDevsDat[,6]
+        ymaxE <- stdDevsDat[,3] + stdDevsDat[,6]
         yminVal <- round(min(yminE)-min(yminE)*.01,15)
         ymaxVal <- round(max(ymaxE)+max(ymaxE)*.015,15)
         yLimits <- c(yminVal, ymaxVal)
@@ -968,38 +1140,14 @@ server <- function(input, output,session) {
             theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
         }
         })
+      prog <- 70; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
     }
     p5 <<- p5; Plot5 <- grid.arrange(grobs=p5,ncol=2); assign("Plot5",Plot5,envir = globalenv()) #; print(Plot5)
     grid.arrange(Plot5)
+    prog <- 100; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
+    }) #End progress bar
     }
   },res=110)
-  
-  
-  #Render ReadMe UI
-  rmdfiles <- c("MathModel.Rmd","GettingStarted.Rmd")
-  sapply(rmdfiles, knit, quiet = T)
-  output$markdownRM <- renderUI({
-    fluidPage(
-    #tags$head(HTML("<script type='text/x-mathjax-config'>MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: 'all'} } });</script>")),
-    #includeMarkdown("MathModel.Rmd")
-    #includeMarkdown(rmarkdown::render("MathModel.Rmd",'html_document'))
-    #HTML(markdown::markdownToHTML(knit('MathModel.Rmd', quiet = TRUE), fragment.only=TRUE))
-    withMathJax(includeMarkdown("MathModel.Rmd"))
-    #withMathJax(HTML(markdown::markdownToHTML(knit("MathModel.Rmd", quiet = TRUE), fragment.only=TRUE,title="Frack Off",header="Mathematical Model for Anaerobic Digestion")))
-    )
-    })
-  #Render GettingStarted UI
-  output$markdownGS <- renderUI({
-    fluidPage(
-      #tags$head(HTML("<script type='text/x-mathjax-config'>MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: 'all'} } });</script>")),
-      #includeMarkdown("MathModel.Rmd")
-      #includeMarkdown(rmarkdown::render("MathModel.Rmd",'html_document'))
-      #HTML(markdown::markdownToHTML(knit('MathModel.Rmd', quiet = TRUE), fragment.only=TRUE))
-      withMathJax(includeMarkdown("GettingStarted.Rmd"))
-      #withMathJax(HTML(markdown::markdownToHTML(knit("MathModel.Rmd", quiet = TRUE), fragment.only=TRUE,title="Frack Off",header="Mathematical Model for Anaerobic Digestion")))
-    )
-  })
-  
   
 } # End Server
 
@@ -1019,7 +1167,7 @@ ui <- dashboardPage(#theme = shinytheme("slate"),
                                                h2("Initial Bacteria Concentrations (mg/L)", align = "center"),
                                                numericInput("Bact_ScaleFact_Acido", label=p("Acidogens",style="color:#080808"), min=1,step=1,value=300,max=10000),
                                                numericInput("Bact_ScaleFact_Aceto", label=p("Acetogens",style="color:#080808"), min=1,step=1,value=3000,max=10000),
-                                               numericInput("Bact_ScaleFact_Meth", label=p("Methanogens",style="color:#080808"), min=1,step=1,value=3000,max=10000),
+                                               numericInput("Bact_ScaleFact_Meth", label=p("Methanogens",style="color:#080808"), min=1,step=1,value=500,max=10000),
                                                numericInput("Bact_ScaleFact_Bact", label=p("Bacteroides",style="color:#080808"), min=1,step=1,value=300,max=10000)
                            ),
                            label = "Bacteria", style = "stretch", size="sm",#up=TRUE,
@@ -1048,7 +1196,11 @@ ui <- dashboardPage(#theme = shinytheme("slate"),
                                                  status = "primary", width = "600px",
                                                  #tooltip = tooltipOptions(title = "Click to see options",placement = "bottom"),
                                                  animate = animateOptions(enter = "fadeInDown", exit = "fadeOutUp",duration = 0.8)
-                                               )
+                                               ),
+                                               numericInput("WT_Perc_MeOL_IN", 
+                                                            label=p("Methanol",style="color:#080808"), min=0.1,step=.01,value=0.4,max=0.6),
+                                               numericInput("WT_Perc_ISO_IN", 
+                                                            label=p("Isopropanol",style="color:#080808"), min=0.1,step=.01,value=0.4,max=0.6)
                            ),
                            label = "Chemical Compounds", style = "stretch",size="sm", #up=TRUE,
                            status = "primary", width = "420px",
@@ -1076,8 +1228,8 @@ ui <- dashboardPage(#theme = shinytheme("slate"),
                          shinyWidgets::dropdown(
                            shinydashboard::box(width = 12, status = "primary", solidHeader = FALSE,
                                                h2("Parameter Variability (CV %)", align = "center"),
-                                               sliderInput("kinetic_var",label= p("Kinetic Rates",style="color:#080808"), 0,100,25,1),
-                                               sliderInput("yield_var",label= p("Bacteria Yields",style="color:#080808"), 0,50,10,1),
+                                               sliderInput("kinetic_var",label= p("Kinetic Rates",style="color:#080808"), 0,50,20,1),
+                                               sliderInput("yield_var",label= p("Bacteria Yields",style="color:#080808"), 0,30,10,1),
                                                radioGroupButtons("confInterval",label=p("Confidence Interval (95%)",style="color:#080808"),justified = TRUE,
                                                                  checkIcon = list(yes = icon("ok", lib = "glyphicon")),
                                                                  choices = c("Confidence Band","Error Bars"),selected = "Confidence Band")
@@ -1100,7 +1252,7 @@ ui <- dashboardPage(#theme = shinytheme("slate"),
                                                                 h2("Sensitivity Analysis", align = "center"),
                                                                 pickerInput(inputId = "SensParam",label = p("Choose Parameter to Vary",style="color:#080808"), 
                                                                             choices = SensChoices,options = list(size = 5,`style` = "btn-info"),selected = "WT % of Guar Gum"),
-                                                                sliderInput("SensRange", p("Range of Parameter Variance:",style="color:#080808"), min = -150, max = 150, post="%",value = c(-50,50))
+                                                                sliderInput("SensRange", p("Range of Parameter Variance:",style="color:#080808"), min = -80, max = 80, post="%",value = c(-25,25))
                                                )
                            ),
                            label = "Simulation", style = "stretch",size="sm", #up=TRUE,
@@ -1138,7 +1290,7 @@ ui <- dashboardPage(#theme = shinytheme("slate"),
                fluidRow(column(1),
                         column(10,
                                sliderInput("cutOff",label="Set Time (h) to Truncate Data and Evaluate Output",
-                                     25,300,100,5)
+                                     25,300,115,5)
                  )))
       ),
     hr(),
@@ -1272,7 +1424,8 @@ ui <- dashboardPage(#theme = shinytheme("slate"),
     tags$script(src = "js/modal_vid.js"),
     tags$link(rel = "stylesheet", type = "text/css", href = "styles.css"),
     tags$style(HTML(".main-sidebar { font-size: 16px; }"))
-  )
+  )#,
+  #tags$style(".swal-modal {width: 80%;}")
     
 ) # End UI  
 
