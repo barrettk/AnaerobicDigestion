@@ -38,7 +38,7 @@ library(polynom,quietly = T)
 library(magrittr,quietly = T)
 library(reactlog)
 # tell shiny to log all reactivity
-#options(shiny.reactlog = TRUE)
+options(shiny.reactlog = TRUE)
 
 # Compile the model
 mod <- mrgsolve::mread("AnaerobicDigestionShinyV3.cpp")
