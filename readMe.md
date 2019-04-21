@@ -26,7 +26,7 @@ if (length(new.pkg)) {
 library(devtools)
 devtools::install_github("metrumresearchgroup/mrgsolve", ref="dev")
 ```
-Installing the above packages prior to running will speed up the initial loading by a lot. Make sure each of the packages can be loaded via `library()`.
+Installing the above packages prior to running will speed up the initial loading by a lot. Make sure each of the packages can be loaded via `library()`. Note: You will need Rtools (windows) or Xcode (mac) installed in order to use **mrgsolve**.
 
 ## Proposed Reaction Mechanisms involved in process
 
