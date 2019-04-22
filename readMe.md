@@ -33,7 +33,7 @@ Installing the above packages prior to running will speed up the initial loading
 Contaminants being converted in bioreactor:
 - Guar Gum (Brown)
 - PEG 400 (Red)
-- Methanol (Yellow) & Isopropanol (Not shown)
+- Methanol (Yellow) & Isopropanol (Orange)
 - Petrolium Distillates (Not shown)
 
 (Missing Petrolium distillates and Isopropanol from model and mechanism) 
