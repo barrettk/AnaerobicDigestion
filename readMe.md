@@ -16,7 +16,7 @@ The tabs on the left then allow the user to navigate the simulated reactor outpu
 To run the app locally, install R and run the command: `runGitHub( "AnaerobicDigestion", "KyleBarrett")`
 It should install the required packages automatically, but in the event of complications, run the following lines to install the necessary packages:
 ```
-pkg <- c("shiny", "shinyAce", "shinydashboard", "dplyr", "knitr", "plyr", "tidyverse", 
+pkg <- c("shiny", "shinyAce", "shinydashboard", "dplyr", "knitr", "plyr", "tidyverse", "cowplot",
          "wrapr", "extrafont", "polynom", "ggplot2", "shinyWidgets", "gridExtra", "rmarkdown", 
          "markdown", "sn", "rlang", "lattice", "reshape", "reshape2", "magrittr", "stats","reactlog")
 new.pkg <- pkg[!(pkg %in% installed.packages())]
