@@ -49,7 +49,7 @@ mod <- mrgsolve::mread("AnaerobicDigestionShinyV3.cpp")
 source("Bacteria_kinetics.R",local=globalenv())
 .model <- paste(mrgsolve:::code(mod), collapse='\n')
 assign(".model",.model,envir = globalenv())
-SensChoices <- c("Acidogen Conc.","Acetogen Conc.","Methanogen Conc.","Bacteroid Conc.","Head Space Ratio","Temperature","Number of Wells","WT % of Guar Gum","WT % of PEG-400","WT % of Methanol","WT % of Isopropanol")
+SensChoices <- c("Acidogen Conc.","Acetogen Conc.","Methanogen Conc.","Bacteroid Conc.","Bacteria Decay Rate","Head Space Ratio","Temperature","Number of Wells","WT % of Guar Gum","WT % of PEG-400","WT % of Methanol","WT % of Isopropanol")
 
 
 # Server Code -------------------------------------------------------------
@@ -150,6 +150,8 @@ server <- function(input, output,session) {
     shiny::req(input[["wells"]])
     shiny::req(input[["Temp"]])
     shiny::req(input[["Head_Space_VolRatio"]])
+    shiny::req(input[["TempSlope"]])
+    shiny::req(input[["DecayRate"]])
     
       test <- PegDist() %>% as.vector() %>% as.numeric()
       test2 <- test*44+18 %>% as.vector() %>% as.numeric()
@@ -166,6 +168,8 @@ server <- function(input, output,session) {
             WT_Perc_ISO_IN = (as.numeric(input[["WT_Perc_ISO_IN"]]))/100,
             wells = as.numeric(input[["wells"]]),
             Temp = as.numeric(input[["Temp"]]),
+            TempSlope = as.numeric(input[["TempSlope"]]),
+            DecayRate = as.numeric(input[["DecayRate"]]),
             Head_Space_VolRatio = as.numeric(input[["Head_Space_VolRatio"]]),
             molFracPEG9 = yA[5], molFracPEG8 = yA[4], molFracPEG7 = yA[3],
             molFracPEG6 = yA[2], molFracPEG5 = yA[1], MW_PEG_In = MW_PEG_In,
@@ -211,6 +215,8 @@ server <- function(input, output,session) {
         SensParam2 <- "WT_Perc_MeOL_IN"
       }else if(SensParam=="WT % of Isopropanol"){
         SensParam2 <- "WT_Perc_ISO_IN"
+      }else if(SensParam=="Bacteria Decay Rate"){
+        SensParam2 <- "DecayRate"
       }
       return(SensParam2)
     }else{
@@ -1327,7 +1333,8 @@ ui <- dashboardPage(#theme = shinytheme("slate"),
                                                numericInput("Bact_ScaleFact_Acido", label=p("Acidogens",style="color:#080808"), min=1,step=1,value=300,max=10000),
                                                numericInput("Bact_ScaleFact_Aceto", label=p("Acetogens",style="color:#080808"), min=1,step=1,value=3000,max=10000),
                                                numericInput("Bact_ScaleFact_Meth", label=p("Methanogens",style="color:#080808"), min=1,step=1,value=500,max=10000),
-                                               numericInput("Bact_ScaleFact_Bact", label=p("Bacteroides",style="color:#080808"), min=1,step=1,value=300,max=10000)
+                                               numericInput("Bact_ScaleFact_Bact", label=p("Bacteroides",style="color:#080808"), min=1,step=1,value=300,max=10000),
+                                               sliderInput("DecayRate",label=p("Decay Rate",style="color:#080808"), post=" 1/h", 0,0.002,0.001,0.0002,ticks = F)
                            ),
                            label = "Bacteria", style = "stretch", size="sm",#up=TRUE,
                            status = "primary", width = "420px",
@@ -1372,7 +1379,8 @@ ui <- dashboardPage(#theme = shinytheme("slate"),
                            shinydashboard::box(width = 12, status = "primary", solidHeader = FALSE,
                                                h2("System Properties", align = "center"),
                                                sliderInput("wells",label= p("Number of Wells to Pull From",style="color:#080808"), 1,55,55,1),
-                                               sliderInput("Temp",label= p("Reactor Temperature (C)",style="color:#080808"), 20,40,30,1),
+                                               sliderInput("Temp",label= p("Initial Reactor Temperature (°C)",style="color:#080808"), 20,40,30,1),
+                                               knobInput("TempSlope",displayPrevious=T,label= p("Temperature Slope (°C/h)",style="color:#080808"),0,-0.1,0.1,0.01,immediate=F),# ,height = "50%",width="50%"
                                                numericInput("Head_Space_VolRatio",
                                                             label=p("Ratio of Headspace to Reactor Volume (L/L)",style="color:#080808"),
                                                             min=0.25,max=3,value=2,step=0.05)

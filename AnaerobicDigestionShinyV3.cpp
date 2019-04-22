@@ -64,6 +64,9 @@ $PARAM
     b_Meth_km = 0.1449059
     c_Meth_km = -0.004059418
 
+    TempSlope = -0.1
+DecayRate = 0.001
+  
 $FIXED
   
   // Henry's Constants mol/L-atm at 25C
@@ -446,7 +449,7 @@ $ODE
   double Henry_CH4 = (Henry_0_CH4 * exp(Hsol_CH4*((1/TempK)-1/Temp0K)))/101325;
   
   // Temperature Rate Control
-  dxdt_Temp2 = 0;
+  dxdt_Temp2 = TempSlope;
   
   // Concentrations (mol/L)
     // Guar Gum Process
@@ -595,13 +598,14 @@ $ODE
   dxdt_ISOPROPANOL = (-Rate_ISOPROPANOL)*vol;
   // Bacteroides Degradation (g/h)
   dxdt_BACTEROID = (Rate_PEG9*Conc_BACTEROID + Rate_PEG8*Conc_BACTEROID + Rate_PEG7*Conc_BACTEROID + Rate_PEG6*Conc_BACTEROID +
-    Rate_PEG5*Conc_BACTEROID + Rate_PEG4*Conc_BACTEROID + Rate_PEG3*Conc_BACTEROID + Rate_AcetHyde*Conc_BACTEROID) * vol;
+    Rate_PEG5*Conc_BACTEROID + Rate_PEG4*Conc_BACTEROID + Rate_PEG3*Conc_BACTEROID + Rate_AcetHyde*Conc_BACTEROID) * vol  - 
+    DecayRate*Conc_BACTEROID*vol;
   
   // Acidogenesis and Acetogenesis (g/h)
-  dxdt_ACIDOGEN = ((U_Acido_Glucose*Conc_ACIDOGEN) * num_AcidogenReactions) * vol;
+  dxdt_ACIDOGEN = ((U_Acido_Glucose*Conc_ACIDOGEN) * num_AcidogenReactions) * vol - DecayRate*Conc_ACIDOGEN*vol;
   
   dxdt_ACETOGEN = (U_Aceto_Eth*Conc_ACETOGEN + U_Aceto_PropA*Conc_ACETOGEN + Rate_DEG*Conc_ACETOGEN + Rate_EG*Conc_ACETOGEN) * vol + Aceto_H2*Conc_ACETOGEN*MW_H2*Y_H2_Acido +
-    Aceto_H2*Conc_ACETOGEN*MW_CO2*Y_CO2_Acido ;
+    Aceto_H2*Conc_ACETOGEN*MW_CO2*Y_CO2_Acido  - DecayRate*Conc_ACETOGEN*vol;
   
   // Components: Intermediate Products (Liquid) (mol/h)
   dxdt_ETHANOL = -Flow*Conc_ETHANOL + ((U_Acido_Glucose*Conc_ACIDOGEN/(MW_glucose*Y_Acido_Glucose))*2 - 
@@ -624,7 +628,7 @@ $ODE
   
   dxdt_METHANOGEN = Meth_H2*Conc_METHANOGEN*MW_H2*Y_H2_Ace + Meth_H2*Conc_METHANOGEN*MW_CO2*Y_CO2_Ace + 
     (U_Meth_Acet*Conc_METHANOGEN + (Rate_METHANOL*Y_methanol_X/MW_methanol) + 
-    (Rate_ISOPROPANOL*Y_isopropanol_X/MW_isopropanol)) * vol;
+    (Rate_ISOPROPANOL*Y_isopropanol_X/MW_isopropanol)) * vol - DecayRate*Conc_METHANOGEN*vol;
   
   // Components: Final Products (Biogas) (mol/h)
   dxdt_CO2_TOT = ((U_Acido_Glucose*Conc_ACIDOGEN/(MW_glucose*Y_Acido_Glucose))*2 + (U_Acido_Glucose*Conc_ACIDOGEN/(MW_glucose*Y_Acido_Glucose))*2 +
