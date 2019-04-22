@@ -1,22 +1,24 @@
 
-pkg <- c("shiny", "mrgsolve", "shinyAce", "shinydashboard", "dplyr", "knitr", "plyr", "tidyverse", 
-         "wrapr", "extrafont", "polynom", "ggplot2", "shinyWidgets", "gridExtra", "rmarkdown", 
-         "markdown", "sn", "rlang", "lattice", "reshape", "reshape2", "magrittr", "stats","reactlog")
-new.pkg <- pkg[!(pkg %in% installed.packages())]
-if (length(new.pkg)) {
-  install.packages(new.pkg)
-}
-#Mrgsolve
-library(mrgsolve,quietly = T)
-options(mrgsolve_mread_quiet=TRUE)
+# pkg <- c("shiny", "shinyAce", "shinydashboard", "dplyr", "knitr", "plyr", "tidyverse", 
+#          "wrapr", "extrafont", "polynom", "ggplot2", "shinyWidgets", "gridExtra", "rmarkdown", 
+#          "markdown", "sn", "rlang", "lattice", "reshape", "reshape2", "magrittr", "stats","reactlog","devtools")
+# new.pkg <- pkg[!(pkg %in% installed.packages())]
+# if (length(new.pkg)) {
+#   install.packages(new.pkg,dependencies=T)
+# }
+# library(devtools)
+# pkg2 <- "mrgsolve"
+# new.pkg2 <- pkg2[!(pkg2 %in% installed.packages())]
+# if("mrgsolve" %in% new.pkg2){
+#   devtools::install_github("metrumresearchgroup/mrgsolve", ref="dev")
+# }
+suppressMessages(library(rsconnect,quietly = T))
 #UI Packages
 suppressMessages(library(shiny,quietly = T))
 suppressMessages(library(shinyAce,quietly = T))
 suppressMessages(library(shinydashboard,quietly = T))
-#suppressMessages(library(shinyjs,quietly=T))
 #library(shiny.semantic)
 library(shinyWidgets,quietly = T)
-suppressMessages(library(rsconnect,quietly = T))
 library(rmarkdown); library(markdown)
 library(knitr);  library(webshot)
 
@@ -24,21 +26,21 @@ library(knitr);  library(webshot)
 suppressMessages(library(plyr,quietly = T))
 suppressMessages(library(dplyr,quietly = T))
 suppressMessages(library(ggplot2,quietly = T))
+library(cowplot)
 suppressMessages(library(tidyverse,quietly = T))
 suppressMessages(library(sn,quietly = T))
-library(stats)
 library(rlang)
 library(wrapr)
-library(lattice,quietly = T)
+#library(lattice,quietly = T)
 library(gridExtra,quietly = T)
 library(extrafont,quietly = T)
-library(reshape,quietly = T)
 library(reshape2,quietly = T)
-library(polynom,quietly = T)
-library(magrittr,quietly = T)
-library(reactlog)
+#Mrgsolve
+library(mrgsolve)
+options(mrgsolve_mread_quiet=TRUE)
 # tell shiny to log all reactivity
-options(shiny.reactlog = TRUE)
+#library(reactlog)
+#options(shiny.reactlog = TRUE)
 
 # Compile the model
 mod <- mrgsolve::mread("AnaerobicDigestionShinyV3.cpp")
@@ -404,7 +406,6 @@ server <- function(input, output,session) {
   #Standard Deviation Function (For Table)
   summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=T,
                         conf.interval=.95, .drop=TRUE) {
-    library(plyr)
     # New version of length which can handle NA's: if na.rm==T, don't count them
     length2 <- function (x, na.rm=FALSE) {
       if (na.rm) sum(!is.na(x))
@@ -628,6 +629,7 @@ server <- function(input, output,session) {
     shiny::req(out())
     shiny::req(input[["cutOff"]])
     shiny::req(input[["simType"]])
+    plotPoints <- input[["plotPoints"]] %>% as.logical()
     simType <- as.character(input[["simType"]])
     #Load Reactive Objects
     varyParamClass <- varyParamClass() %>% as.character()
@@ -659,17 +661,33 @@ server <- function(input, output,session) {
         yLimits <- c(yminVal, ymaxVal)
         #Make Plot
         if(confInterval=="Error Bars"){
+          if(plotPoints){
           ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,4], group=stdDevsDat[,varyParam])) + geom_line(aes_string(color=factor(stdDevsDat[,varyParam])),size=0.5) +
             geom_errorbar(color="black",aes(ymin=yminE,ymax=ymaxE),width=2.5) + geom_point(aes_string(color=factor(stdDevsDat[,varyParam])),shape=21,size=1.1,alpha=0.9) +
             scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + colScale + 
             labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
             theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
+          }else{
+            ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,4], group=stdDevsDat[,varyParam])) + geom_line(aes_string(color=factor(stdDevsDat[,varyParam])),size=0.5) +
+              geom_errorbar(color="black",aes(ymin=yminE,ymax=ymaxE),width=2.5) + 
+              scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + colScale + 
+              labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
+              theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
+          }
         }else if(confInterval=="Confidence Band"){
+          if(plotPoints){
           ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,4], group=stdDevsDat[,varyParam])) + geom_line(aes_string(color=factor(stdDevsDat[,varyParam])),size=0.5) +
             geom_ribbon(aes_string(ymin=yminE,ymax=ymaxE,fill=factor(stdDevsDat[,varyParam])),alpha=0.3,show.legend = FALSE) + geom_point(aes_string(color=factor(stdDevsDat[,varyParam])),shape=21,size=1.1,alpha=0.9) +
             scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + colScale + 
             labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
-            theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
+            theme(text=element_text(family="Times New Roman", face="bold", size=13))
+          }else{
+            ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,4], group=stdDevsDat[,varyParam])) + geom_line(aes_string(color=factor(stdDevsDat[,varyParam])),size=0.5) +
+              geom_ribbon(aes_string(ymin=yminE,ymax=ymaxE,fill=factor(stdDevsDat[,varyParam])),alpha=0.3,show.legend = FALSE) +
+              scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + colScale + 
+              labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
+              theme(text=element_text(family="Times New Roman", face="bold", size=13))
+          }
         }
       })
       prog <- 70; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
@@ -703,17 +721,33 @@ server <- function(input, output,session) {
         yLimits <- c(yminVal, ymaxVal)
         #Make Plot
         if(confInterval=="Error Bars"){
+          if(plotPoints){
           ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,3])) + geom_line(color="red",size=0.5) +
             geom_errorbar(color="black",aes(ymin=yminE,ymax=ymaxE),width=2.5) + geom_point(color="black",shape=21,size=1.1,fill="white",alpha=0.9) +
             scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + 
             labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
             theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
+          }else{
+            ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,3])) + geom_line(color="red",size=0.5) +
+              geom_errorbar(color="black",aes(ymin=yminE,ymax=ymaxE),width=2.5) +
+              scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + 
+              labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
+              theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
+          }
         }else if(confInterval=="Confidence Band"){
+          if(plotPoints){
           ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,3])) + geom_line(color="red",size=0.5) +
             geom_ribbon(aes(ymin=yminE,ymax=ymaxE),alpha=0.3) + geom_point(color="black",shape=21,size=1.1,fill="white",alpha=0.9) +
             scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + 
             labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
-            theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
+            theme(text=element_text(family="Times New Roman", face="bold", size=13))
+          }else{
+            ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,3])) + geom_line(color="red",size=0.5) +
+              geom_ribbon(aes(ymin=yminE,ymax=ymaxE),alpha=0.3) +
+              scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + 
+              labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
+              theme(text=element_text(family="Times New Roman", face="bold", size=13))
+          }
         }
           })
       prog <- 70; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
@@ -730,6 +764,7 @@ server <- function(input, output,session) {
     shiny::req(out())
     shiny::req(input[["cutOff"]])
     shiny::req(input[["simType"]])
+    plotPoints <- input[["plotPoints"]] %>% as.logical()
     simType <- as.character(input[["simType"]])
     #Load Reactive Objects
     varyParamClass <- varyParamClass() %>% as.character()
@@ -761,17 +796,33 @@ server <- function(input, output,session) {
         yLimits <- c(yminVal, ymaxVal)
         #Make Plot
         if(confInterval=="Error Bars"){
+          if(plotPoints){
           ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,4], group=stdDevsDat[,varyParam])) + geom_line(aes_string(color=factor(stdDevsDat[,varyParam])),size=0.5) +
             geom_errorbar(color="black",aes(ymin=yminE,ymax=ymaxE),width=2.5) + geom_point(aes_string(color=factor(stdDevsDat[,varyParam])),shape=21,size=1.1,alpha=0.9) +
             scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + colScale + 
             labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
             theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
+          }else{
+            ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,4], group=stdDevsDat[,varyParam])) + geom_line(aes_string(color=factor(stdDevsDat[,varyParam])),size=0.5) +
+              geom_errorbar(color="black",aes(ymin=yminE,ymax=ymaxE),width=2.5) +
+              scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + colScale + 
+              labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
+              theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
+          }
         }else if(confInterval=="Confidence Band"){
+          if(plotPoints){
           ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,4], group=stdDevsDat[,varyParam])) + geom_line(aes_string(color=factor(stdDevsDat[,varyParam])),size=0.5) +
             geom_ribbon(aes_string(ymin=yminE,ymax=ymaxE,fill=factor(stdDevsDat[,varyParam])),alpha=0.3,show.legend = FALSE) + geom_point(aes_string(color=factor(stdDevsDat[,varyParam])),shape=21,size=1.1,alpha=0.9) +
             scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + colScale + 
             labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
-            theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
+            theme(text=element_text(family="Times New Roman", face="bold", size=13))
+          }else{
+            ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,4], group=stdDevsDat[,varyParam])) + geom_line(aes_string(color=factor(stdDevsDat[,varyParam])),size=0.5) +
+              geom_ribbon(aes_string(ymin=yminE,ymax=ymaxE,fill=factor(stdDevsDat[,varyParam])),alpha=0.3,show.legend = FALSE) + 
+              scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + colScale + 
+              labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
+              theme(text=element_text(family="Times New Roman", face="bold", size=13))
+          }
         }
       })
       prog <- 70; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
@@ -805,22 +856,42 @@ server <- function(input, output,session) {
         yLimits <- c(yminVal, ymaxVal)
         #Make Plot
         if(confInterval=="Error Bars"){
+          if(plotPoints){
           ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,3])) + geom_line(color="red",size=0.5) +
             geom_errorbar(color="black",aes(ymin=yminE,ymax=ymaxE),width=2.5) + geom_point(color="black",shape=21,size=1.1,fill="white",alpha=0.9) +
             scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + 
             labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
             theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
+          }else{
+            ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,3])) + geom_line(color="red",size=0.5) +
+              geom_errorbar(color="black",aes(ymin=yminE,ymax=ymaxE),width=2.5) + 
+              scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + 
+              labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
+              theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
+          }
         }else if(confInterval=="Confidence Band"){
+          if(plotPoints){
           ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,3])) + geom_line(color="red",size=0.5) +
             geom_ribbon(aes(ymin=yminE,ymax=ymaxE),alpha=0.3) + geom_point(color="black",shape=21,size=1.1,fill="white",alpha=0.9) +
             scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + 
             labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
-            theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
+            theme(text=element_text(family="Times New Roman", face="bold", size=13))
+          }else{
+            ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,3])) + geom_line(color="red",size=0.5) +
+              geom_ribbon(aes(ymin=yminE,ymax=ymaxE),alpha=0.3) +
+              scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + 
+              labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
+              theme(text=element_text(family="Times New Roman", face="bold", size=13))
+          }
         }
           })
       prog <- 70; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
     }
-    p2 <<- p2; Plot2 <- grid.arrange(grobs=p2,ncol=2); assign("Plot2",Plot2,envir = globalenv()) #; print(Plot2)
+    # for(i in 1:length(p2)){p2[[i]] <-  ggplotly(p2[[i]]) %>%  layout(
+    #   xaxis = list(automargin=TRUE), yaxis = list(automargin=TRUE,tickprefix=" "),margin=list(l = 75,pad=4))}
+    #                  Plot2 <-  subplot(p2,nrows = round(length(p2)/2),titleX=T,shareX = T,titleY = T)
+    p2 <<- p2; Plot2 <- grid.arrange(grobs=p2,ncol=2); 
+    assign("Plot2",Plot2,envir = globalenv()) #; print(Plot2)
     grid.arrange(Plot2)
     prog <- 100; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
     }) #End progress bar
@@ -832,6 +903,7 @@ server <- function(input, output,session) {
     shiny::req(out())
     shiny::req(input[["cutOff"]])
     shiny::req(input[["simType"]])
+    plotPoints <- input[["plotPoints"]] %>% as.logical()
     simType <- as.character(input[["simType"]])
     #Load Reactive Objects
     varyParamClass <- varyParamClass() %>% as.character()
@@ -863,17 +935,33 @@ server <- function(input, output,session) {
         yLimits <- c(yminVal, ymaxVal)
         #Make Plot
         if(confInterval=="Error Bars"){
+          if(plotPoints){
           ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,4], group=stdDevsDat[,varyParam])) + geom_line(aes_string(color=factor(stdDevsDat[,varyParam])),size=0.5) +
             geom_errorbar(color="black",aes(ymin=yminE,ymax=ymaxE),width=2.5) + geom_point(aes_string(color=factor(stdDevsDat[,varyParam])),shape=21,size=1.1,alpha=0.9) +
             scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + colScale + 
             labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
-            theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
+            theme(text=element_text(family="Times New Roman", face="bold", size=13))
+          }else{
+            ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,4], group=stdDevsDat[,varyParam])) + geom_line(aes_string(color=factor(stdDevsDat[,varyParam])),size=0.5) +
+              geom_errorbar(color="black",aes(ymin=yminE,ymax=ymaxE),width=2.5) +
+              scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + colScale + 
+              labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
+              theme(text=element_text(family="Times New Roman", face="bold", size=13))
+          }
         }else if(confInterval=="Confidence Band"){
+          if(plotPoints){
           ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,4], group=stdDevsDat[,varyParam])) + geom_line(aes_string(color=factor(stdDevsDat[,varyParam])),size=0.5) +
             geom_ribbon(aes_string(ymin=yminE,ymax=ymaxE,fill=factor(stdDevsDat[,varyParam])),alpha=0.3,show.legend = FALSE) + geom_point(aes_string(color=factor(stdDevsDat[,varyParam])),shape=21,size=1.1,alpha=0.9) +
             scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + colScale + 
             labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
-            theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
+            theme(text=element_text(family="Times New Roman", face="bold", size=13))
+          }else{
+            ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,4], group=stdDevsDat[,varyParam])) + geom_line(aes_string(color=factor(stdDevsDat[,varyParam])),size=0.5) +
+              geom_ribbon(aes_string(ymin=yminE,ymax=ymaxE,fill=factor(stdDevsDat[,varyParam])),alpha=0.3,show.legend = FALSE) +
+              scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + colScale + 
+              labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
+              theme(text=element_text(family="Times New Roman", face="bold", size=13))
+          }
         }
       })
       prog <- 70; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
@@ -907,17 +995,33 @@ server <- function(input, output,session) {
         yLimits <- c(yminVal, ymaxVal)
         #Make Plot
         if(confInterval=="Error Bars"){
+          if(plotPoints){
           ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,3])) + geom_line(color="red",size=0.5) +
             geom_errorbar(color="black",aes(ymin=yminE,ymax=ymaxE),width=2.5) + geom_point(color="black",shape=21,size=1.1,fill="white",alpha=0.9) +
             scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + 
             labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
-            theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
+            theme(text=element_text(family="Times New Roman", face="bold", size=13))
+          }else{
+            ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,3])) + geom_line(color="red",size=0.5) +
+              geom_errorbar(color="black",aes(ymin=yminE,ymax=ymaxE),width=2.5) + 
+              scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + 
+              labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
+              theme(text=element_text(family="Times New Roman", face="bold", size=13))
+          }
         }else if(confInterval=="Confidence Band"){
+          if(plotPoints){
           ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,3])) + geom_line(color="red",size=0.5) +
             geom_ribbon(aes(ymin=yminE,ymax=ymaxE),alpha=0.3) + geom_point(color="black",shape=21,size=1.1,fill="white",alpha=0.9) +
             scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + 
             labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
             theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
+          }else{
+            ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,3])) + geom_line(color="red",size=0.5) +
+              geom_ribbon(aes(ymin=yminE,ymax=ymaxE),alpha=0.3) + 
+              scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + 
+              labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
+              theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
+          }
         }
         })
       prog <- 70; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
@@ -935,6 +1039,7 @@ server <- function(input, output,session) {
     shiny::req(input[["cutOff"]])
     shiny::req(input[["simType"]])
     simType <- as.character(input[["simType"]])
+    plotPoints <- input[["plotPoints"]] %>% as.logical()
     #Load Reactive Objects
     varyParamClass <- varyParamClass() %>% as.character()
     varyParam <- varyParam() %>% as.character()
@@ -965,17 +1070,33 @@ server <- function(input, output,session) {
         yLimits <- c(yminVal, ymaxVal)
         #Make Plot
         if(confInterval=="Error Bars"){
+          if(plotPoints){
           ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,4], group=stdDevsDat[,varyParam])) + geom_line(aes_string(color=factor(stdDevsDat[,varyParam])),size=0.5) +
             geom_errorbar(color="black",aes(ymin=yminE,ymax=ymaxE),width=2.5) + geom_point(aes_string(color=factor(stdDevsDat[,varyParam])),shape=21,size=1.1,alpha=0.9) +
             scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + colScale + 
             labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
-            theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
+            theme(text=element_text(family="Times New Roman", face="bold", size=13))
+          }else{
+            ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,4], group=stdDevsDat[,varyParam])) + geom_line(aes_string(color=factor(stdDevsDat[,varyParam])),size=0.5) +
+              geom_errorbar(color="black",aes(ymin=yminE,ymax=ymaxE),width=2.5) +
+              scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + colScale + 
+              labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
+              theme(text=element_text(family="Times New Roman", face="bold", size=13))
+          }
         }else if(confInterval=="Confidence Band"){
+          if(plotPoints){
           ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,4], group=stdDevsDat[,varyParam])) + geom_line(aes_string(color=factor(stdDevsDat[,varyParam])),size=0.5) +
             geom_ribbon(aes_string(ymin=yminE,ymax=ymaxE,fill=factor(stdDevsDat[,varyParam])),alpha=0.3,show.legend = FALSE) + geom_point(aes_string(color=factor(stdDevsDat[,varyParam])),shape=21,size=1.1,alpha=0.9) +
             scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + colScale + 
             labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
             theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
+          }else{
+            ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,4], group=stdDevsDat[,varyParam])) + geom_line(aes_string(color=factor(stdDevsDat[,varyParam])),size=0.5) +
+              geom_ribbon(aes_string(ymin=yminE,ymax=ymaxE,fill=factor(stdDevsDat[,varyParam])),alpha=0.3,show.legend = FALSE) + 
+              scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + colScale + 
+              labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
+              theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
+          }
         }
       })
       prog <- 70; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
@@ -1057,6 +1178,7 @@ server <- function(input, output,session) {
     shiny::req(out())
     shiny::req(input[["cutOff"]])
     shiny::req(input[["simType"]])
+    plotPoints <- input[["plotPoints"]] %>% as.logical()
     simType <- as.character(input[["simType"]])
     #Load Reactive Objects
     varyParamClass <- varyParamClass() %>% as.character()
@@ -1088,17 +1210,33 @@ server <- function(input, output,session) {
         yLimits <- c(yminVal, ymaxVal)
         #Make Plot
         if(confInterval=="Error Bars"){
+          if(plotPoints){
           ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,4], group=stdDevsDat[,varyParam])) + geom_line(aes_string(color=factor(stdDevsDat[,varyParam])),size=0.5) +
             geom_errorbar(color="black",aes(ymin=yminE,ymax=ymaxE),width=2.5) + geom_point(aes_string(color=factor(stdDevsDat[,varyParam])),shape=21,size=1.1,alpha=0.9) +
             scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + colScale + 
             labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
-            theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
+            theme(text=element_text(family="Times New Roman", face="bold", size=13))
+          }else{
+            ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,4], group=stdDevsDat[,varyParam])) + geom_line(aes_string(color=factor(stdDevsDat[,varyParam])),size=0.5) +
+              geom_errorbar(color="black",aes(ymin=yminE,ymax=ymaxE),width=2.5) + 
+              scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + colScale + 
+              labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
+              theme(text=element_text(family="Times New Roman", face="bold", size=13))
+          }
         }else if(confInterval=="Confidence Band"){
+          if(plotPoints){
           ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,4], group=stdDevsDat[,varyParam])) + geom_line(aes_string(color=factor(stdDevsDat[,varyParam])),size=0.5) +
             geom_ribbon(aes_string(ymin=yminE,ymax=ymaxE,fill=factor(stdDevsDat[,varyParam])),alpha=0.3,show.legend = FALSE) + geom_point(aes_string(color=factor(stdDevsDat[,varyParam])),shape=21,size=1.1,alpha=0.9) +
             scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + colScale + 
             labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
-            theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
+            theme(text=element_text(family="Times New Roman", face="bold", size=13))
+          }else{
+            ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,4], group=stdDevsDat[,varyParam])) + geom_line(aes_string(color=factor(stdDevsDat[,varyParam])),size=0.5) +
+              geom_ribbon(aes_string(ymin=yminE,ymax=ymaxE,fill=factor(stdDevsDat[,varyParam])),alpha=0.3,show.legend = FALSE) + 
+              scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + colScale + 
+              labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
+              theme(text=element_text(family="Times New Roman", face="bold", size=13))
+          }
         }
       })
       prog <- 70; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
@@ -1132,17 +1270,33 @@ server <- function(input, output,session) {
         yLimits <- c(yminVal, ymaxVal)
         #Make Plot
         if(confInterval=="Error Bars"){
+          if(plotPoints){
           ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,3])) + geom_line(color="red",size=0.5) +
             geom_errorbar(color="black",aes(ymin=yminE,ymax=ymaxE),width=2.5) + geom_point(color="black",shape=21,size=1.1,fill="white",alpha=0.9) +
             scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + 
             labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
             theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
+          }else{
+            ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,3])) + geom_line(color="red",size=0.5) +
+              geom_errorbar(color="black",aes(ymin=yminE,ymax=ymaxE),width=2.5) + 
+              scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + 
+              labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
+              theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
+          }
         }else if(confInterval=="Confidence Band"){
+          if(plotPoints){
           ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,3])) + geom_line(color="red",size=0.5) +
             geom_ribbon(aes(ymin=yminE,ymax=ymaxE),alpha=0.3) + geom_point(color="black",shape=21,size=1.1,fill="white",alpha=0.9) +
             scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + 
             labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
-            theme(text=element_text(family="Times New Roman", face="bold", size=13)) 
+            theme(text=element_text(family="Times New Roman", face="bold", size=13))
+          }else{
+            ggplot(stdDevsDat, aes_string(x=stdDevsDat$time, y = stdDevsDat[,3])) + geom_line(color="red",size=0.5) +
+              geom_ribbon(aes(ymin=yminE,ymax=ymaxE),alpha=0.3) +
+              scale_y_continuous(limits = yLimits) + geom_hline(yintercept=0, size=0.6, color="black") + 
+              labs(x="Time (h)",y=colNames[i]) + geom_vline(xintercept=0, size=0.6, color="black") + 
+              theme(text=element_text(family="Times New Roman", face="bold", size=13))
+          }
         }
         })
       prog <- 70; setProgress(value=prog,detail = paste('This may take a while...',prog,"%"))
@@ -1291,11 +1445,14 @@ ui <- dashboardPage(#theme = shinytheme("slate"),
     hr(),
     # conditionalPanel("input.tabs=='plot1' | input.tabs=='plot2' | input.tabs=='plot3' | input.tabs=='plot4'",
     sidebarMenu(
-      menuItem("Data Truncation", icon = icon("chevron-circle-right"),
+      menuItem("Plotting Parameters", icon = icon("chevron-circle-right"),
                fluidRow(column(1),
                         column(10,
-                               sliderInput("cutOff",label="Set Time (h) to Truncate Data and Evaluate Output",
-                                     25,300,115,5)
+                               sliderInput("cutOff",label="Truncate Data", post=" h",
+                                     25,300,115,5),
+                               awesomeCheckbox(
+                                 inputId = "plotPoints",label = "Show Data Points on Graphs?", value = FALSE,status = "info"
+                               )
                  )))
       ),
     hr(),
