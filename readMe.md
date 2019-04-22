@@ -70,15 +70,10 @@ Example of how to perform a sensitivity analysis on a given parameter:
 
 ### Features Coming Soon
 
-  * Addition of petrolium distillates, methanol, and isopropanol to the model
-  * Temperature Optimization --> most likely piecewise function
+  * Addition of petrolium distillates to the model
+  * Temperature Optimization --> Slope Manipulation
   * Visual Representation of model
-
-### Potential Upcoming Features
-
-  * Thermodynamic modeling
-  * Expected revenue plots
-  * Optimization of other reactor settings
+  
 
 ## Acknowledgments
 
