@@ -6,12 +6,12 @@ new.pkg <- pkg[!(pkg %in% installed.packages())]
 if (length(new.pkg)) {
   install.packages(new.pkg,dependencies=T)
 }
-library(devtools)
-pkg2 <- "mrgsolve"
-new.pkg2 <- pkg2[!(pkg2 %in% installed.packages())]
-if("mrgsolve" %in% new.pkg2){
-  devtools::install_github("metrumresearchgroup/mrgsolve", ref="dev")
-}
+# library(devtools)
+# pkg2 <- "mrgsolve"
+# new.pkg2 <- pkg2[!(pkg2 %in% installed.packages())]
+# if("mrgsolve" %in% new.pkg2){
+#   devtools::install_github("metrumresearchgroup/mrgsolve", ref="dev")
+# }
 suppressMessages(library(rsconnect,quietly = T))
 #UI Packages
 suppressMessages(library(shiny,quietly = T))
