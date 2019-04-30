@@ -4,9 +4,9 @@ username:
 account: barrettkyle
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
-appId: 769238
-bundleId: 2007328
+appId: 879594
+bundleId: 2029119
 url: https://barrettkyle.shinyapps.io/BioReactorApp/
-when: 1555110697.16475
+when: 1555932681.73803
 asMultiple: FALSE
 asStatic: FALSE
