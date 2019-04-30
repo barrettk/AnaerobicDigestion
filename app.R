@@ -1,11 +1,11 @@
 
-pkg <- c("shiny", "shinyAce", "shinydashboard", "dplyr", "knitr", "plyr", "tidyverse", "cowplot",
-         "wrapr", "extrafont", "polynom", "ggplot2", "shinyWidgets", "gridExtra", "rmarkdown",
-         "markdown", "sn", "rlang", "lattice", "reshape", "reshape2", "magrittr", "stats","reactlog","devtools")
-new.pkg <- pkg[!(pkg %in% installed.packages())]
-if (length(new.pkg)) {
-  install.packages(new.pkg,dependencies=T)
-}
+# pkg <- c("shiny", "shinyAce", "shinydashboard", "dplyr", "knitr", "plyr", "tidyverse", "cowplot",
+#          "wrapr", "extrafont", "polynom", "ggplot2", "shinyWidgets", "gridExtra", "rmarkdown",
+#          "markdown", "sn", "rlang", "lattice", "reshape", "reshape2", "magrittr", "stats","reactlog","devtools")
+# new.pkg <- pkg[!(pkg %in% installed.packages())]
+# if (length(new.pkg)) {
+#   install.packages(new.pkg,dependencies=T)
+# }
 # library(devtools)
 # pkg2 <- "mrgsolve"
 # new.pkg2 <- pkg2[!(pkg2 %in% installed.packages())]
