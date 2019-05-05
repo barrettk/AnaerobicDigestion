@@ -67,12 +67,6 @@ Example of how to perform a sensitivity analysis on a given parameter:
 
 ![Screenshot](Screenshot_Sensitivity.png)
 
-
-### Features Coming Soon
-
-  * Addition of petrolium distillates to the model
-  * Temperature Optimization --> Slope Manipulation
-  * Visual Representation of model
   
 
 ## Acknowledgments
