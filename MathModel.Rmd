@@ -12,7 +12,6 @@ params:
 runtime: shiny
 theme: cerulean
 ---
-
 <style>
 body {
 text-align: justify}
@@ -46,6 +45,9 @@ code.r{ /* Code block */
 }
 pre { /* Code block - determines code spacing between lines */
     font-size: 14px;
+}
+body .main-container {
+max-width: 2000px;
 }
 </style>
 

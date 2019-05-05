@@ -66,7 +66,7 @@ The Contaminants being degraded in this unit include:
 
   * **Guar Gum** *(Done)*
   * **PEG-400** *(Done)*
-  * Petrolium Distillates
+  * **Petrolium Distillates** *(Accounted For)*
   * **Methanol** *(Done)*
   * **Isopropanol** *(Done)*
 
