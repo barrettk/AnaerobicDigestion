@@ -34,7 +34,7 @@ Contaminants being converted in bioreactor:
 - Guar Gum (Brown)
 - PEG 400 (Red)
 - Methanol (Yellow) & Isopropanol (Orange)
-- Petrolium Distillates (Not shown)
+- Petroleum Distillates (Not shown)
 
 (Missing Petrolium distillates and Isopropanol from model and mechanism) 
 
