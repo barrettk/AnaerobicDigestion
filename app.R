@@ -21,6 +21,7 @@ suppressMessages(library(shinydashboard,quietly = T))
 library(shinyWidgets,quietly = T)
 library(rmarkdown); library(markdown)
 library(knitr);  library(webshot)
+library(kableExtra)
 
 #Server Packages
 suppressMessages(library(plyr,quietly = T))
@@ -65,8 +66,8 @@ server <- function(input, output,session) {
       #includeMarkdown("MathModel.Rmd")
       #includeMarkdown(rmarkdown::render("MathModel.Rmd",'html_document'))
       #HTML(markdown::markdownToHTML(knit('MathModel.Rmd', quiet = TRUE), fragment.only=TRUE))
-      withMathJax(includeMarkdown("MathModel.Rmd"))
-      #withMathJax(HTML(markdown::markdownToHTML(knit("MathModel.Rmd", quiet = TRUE), fragment.only=TRUE,title="Frack Off",header="Mathematical Model for Anaerobic Digestion")))
+      #withMathJax(includeMarkdown("MathModel.Rmd"))
+      withMathJax(HTML(markdown::markdownToHTML(knit("MathModel.Rmd", quiet = TRUE), fragment.only=TRUE,title="Frack Off",header="Mathematical Model for Anaerobic Digestion")))
     )
   })
   #Render GettingStarted UI
@@ -1332,7 +1333,7 @@ ui <- dashboardPage(#theme = shinytheme("slate"),
                                                h2("Initial Bacteria Concentrations (mg/L)", align = "center"),
                                                numericInput("Bact_ScaleFact_Acido", label=p("Acidogens",style="color:#080808"), min=1,step=1,value=300,max=10000),
                                                numericInput("Bact_ScaleFact_Aceto", label=p("Acetogens",style="color:#080808"), min=1,step=1,value=3000,max=10000),
-                                               numericInput("Bact_ScaleFact_Meth", label=p("Methanogens",style="color:#080808"), min=1,step=1,value=500,max=10000),
+                                               numericInput("Bact_ScaleFact_Meth", label=p("Methanogens",style="color:#080808"), min=1,step=1,value=3000,max=10000),
                                                numericInput("Bact_ScaleFact_Bact", label=p("Bacteroides",style="color:#080808"), min=1,step=1,value=300,max=10000),
                                                sliderInput("DecayRate",label=p("Decay Rate",style="color:#080808"), post=" 1/h", 0,0.002,0.001,0.0002,ticks = F)
                            ),
@@ -1364,9 +1365,9 @@ ui <- dashboardPage(#theme = shinytheme("slate"),
                                                  animate = animateOptions(enter = "fadeInDown", exit = "fadeOutUp",duration = 0.8)
                                                ),
                                                numericInput("WT_Perc_MeOL_IN", 
-                                                            label=p("Methanol",style="color:#080808"), min=0.1,step=.01,value=0.4,max=0.6),
+                                                            label=p("Methanol",style="color:#080808"), min=0.1,step=.01,value=0.6,max=0.8),
                                                numericInput("WT_Perc_ISO_IN", 
-                                                            label=p("Isopropanol",style="color:#080808"), min=0.1,step=.01,value=0.4,max=0.6)
+                                                            label=p("Isopropanol",style="color:#080808"), min=0.1,step=.01,value=0.6,max=0.8)
                            ),
                            label = "Chemical Compounds", style = "stretch",size="sm", #up=TRUE,
                            status = "primary", width = "420px",

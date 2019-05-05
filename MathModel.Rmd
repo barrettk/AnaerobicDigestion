@@ -49,18 +49,48 @@ pre { /* Code block - determines code spacing between lines */
 }
 </style>
 
-# **Compartmental Model**
+# **Model Assumptions and Limitations**
+
+```{r echo=FALSE, results='asis'}
+library(dplyr)
+library(knitr)
+library(kableExtra)
+Tab <- read.csv("data/Model_assumptions.csv") %>% as.data.frame() %>% dplyr::rename("Comment"=Model.Limitation,"Effect of Addressing Comment"=Effect.of.Addressing.Limitation)
+Tab$Comment <- Tab$Comment %>% as.character()
+#knitr::kable(Tab,align = "c")
+Tab[1,2] <- gsub("_"," →",Tab[1,2])
+Tab %>% 
+  kable('html',align = "c") %>% 
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+# **Illustrations**
+## **Proposed Pathway of Guar Gum**
+<p align="center">
+  <img src="www/Guar_Deg.png" alt="drawing" width="1050" height="760"/>
+</p>
+
+## **Proposed Pathway of PEG-400 (n ~ 8.7)**
 <br>
 <p align="center">
-  <img src="www/compartmentalModel.png" alt="drawing" width="850" height="620"/>
+  <img src="www/PEG_Deg.png" alt="drawing" width="1050" height="760"/>
+</p>
+
+## **Proposed Pathway of Petroleum Distillates/Alcohols**
+<br>
+<p align="center">
+  <img src="www/Alcohol_Deg.png" alt="drawing" width="910" height="560"/>
+</p>
+
+## **Overall Reaction Mechanism**
+<br>
+<p align="center">
+  <img src="www/compartmentalModel.png" alt="drawing" width="1050" height="760"/>
 </p>
 
 # **Differential Equations (Guar Gum Only)**
 
-### **Components Not Added Yet**
-
-  * Petrolium distillates is still in research stage
-  * Only the differential equations for guar gum are provided mathematically. See the model file for the rest.
+  * Due to the large number of PDE's, only the equations relating to guar gum are provided mathematically below. See the model file for the rest (code).
 
 ## **Hydrolysis of Guar Gum**
 
