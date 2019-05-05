@@ -106,17 +106,6 @@ Below is a rough illustration of how the app works evaluates reactive objects as
   
   * Use the `Background of Process` tab to download a PDF summarizing the model process.
 
-
-## **Features Coming Soon** 
-
-  * Addition of petrolium distillates to the model
-  * Temperature Optimization --> most likely piecewise function
-  * More surface level visual representation of model
-  
-## **Potential Upcoming Features** 
-
-  * Thermodynamic model (Gibbs free energy dependence on reactions)
-  * Optimization of other reactor settings
   
 <br>
 [^1]: Credit:
