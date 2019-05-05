@@ -1,6 +1,6 @@
 # Anaerobic Batch Reactor
 
-This app is associated with my senior design project in chemical engineering at Drexel University. 
+This app is associated with my senior design project in chemical engineering at Drexel University.<sup>[1](#myfootnote1)</sup> 
 The model was developed to simulate the degradation of heavy organic compounds through anaerobic digestion. Five unique processes take place in the simulated batch reactor, including the enzymatic hydrolysis of guar gum, acidogenesis of polysaccharide chains, acetogensis, methanogenesis, and anaerobic degredation using bacteroides. See the `Background of Process` tab within the app for a more detailed process description.
 
 ## Getting Started
@@ -26,7 +26,7 @@ if (length(new.pkg)) {
 library(devtools)
 devtools::install_github("metrumresearchgroup/mrgsolve", ref="dev")
 ```
-Installing the above packages prior to running will speed up the initial loading by a lot. Make sure each of the packages can be loaded via `library()`. **Note**: You will need *Rtools* (windows) or *Xcode* (mac) installed in order to use ***[mrgsolve](https://github.com/metrumresearchgroup/mrgsolve)***.
+Installing the above packages prior to running will speed up the initial loading by a lot. Make sure each of the packages can be loaded via `library()`. **Note**: You will need *Rtools* (windows) or *Xcode* (mac) installed in order to use ***[mrgsolve](https://github.com/metrumresearchgroup/mrgsolve)***. See footnote for further details on mac install.<sup>[2](#myfootnote2)</sup>
 
 ## Proposed Reaction Mechanisms involved in process
 
@@ -81,6 +81,12 @@ Example of how to perform a sensitivity analysis on a given parameter:
 * Group Members: Kyle Barrett, Luke Growney, Prem Patel, Farhaan Rizvi
 * Modeled using [mrgsolve](https://github.com/metrumresearchgroup/mrgsolve) - Solving of PDE's 
 
-[^1]: Credit:
-
+<a name="myfootnote1">1</a>:
     Year: 2019, Team Name: "Frack Off", Senior Design Project at Drexel University
+    
+<a name="myfootnote2">2</a>:
+    Note for mac install: The following lines may have to be entered into the Terminal if you recieve an error mentioning a `math.h` file not being found:
+    
+    sudo installer -pkg \
+    /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg \
+    -target /
