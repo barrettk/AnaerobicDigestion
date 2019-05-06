@@ -17,7 +17,7 @@ To run the app locally, install R and run the command: `runGitHub( "AnaerobicDig
 Prior to running the command make sure you have the following necessary packages:
 ```
 pkg <- c("shiny", "shinyAce", "shinydashboard", "dplyr", "knitr", "plyr", "tidyverse", "cowplot",
-         "wrapr", "extrafont", "polynom", "ggplot2", "shinyWidgets", "gridExtra", "rmarkdown", 
+         "wrapr", "extrafont", "polynom", "ggplot2", "shinyWidgets", "gridExtra", "rmarkdown", "kableExtra",
          "markdown", "sn", "rlang", "lattice", "reshape", "reshape2", "magrittr", "stats","reactlog")
 new.pkg <- pkg[!(pkg %in% installed.packages())]
 if (length(new.pkg)) {
