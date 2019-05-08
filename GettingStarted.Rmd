@@ -49,15 +49,20 @@ pre { /* Code block - determines code spacing between lines */
 }
 </style>
 
+
 ## **Quick Summary** 
 
 Navitage to the `Plots` or `Tables` tab on the left, and then adjust `Model Parameters` to see their effect on the overall process. Note that not every parameter will have an effect on every plot.
 
 ## **Purpose** 
 
-This app is associated with my senior design project in chemical engineering at Drexel University. [^1]
+This app is associated with my senior design project in chemical engineering at Drexel University (Team Name: Frack Off)[^1].
 The model was developed to simulate the degradation of heavy organic compounds through anaerobic digestion. Five unique processes take place in the simulated batch reactor, including the enzymatic hydrolysis of guar gum, acidogenesis of polysaccharide chains, acetogensis, methanogenesis, and anaerobic degredation using bacteroides. See the `Background of Process` tab for a more detailed process description.
 <br><br>
+
+<p align="center">
+  <img src="www/FrackOff.png" alt="drawing" width="900" height="620"/>
+</p>
 
 # **Introduction and Motivation**
 

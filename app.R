@@ -1,6 +1,6 @@
 
 # pkg <- c("shiny", "shinyAce", "shinydashboard", "dplyr", "knitr", "plyr", "tidyverse", "cowplot",
-#          "wrapr", "extrafont", "polynom", "ggplot2", "shinyWidgets", "gridExtra", "rmarkdown",
+#          "wrapr", "extrafont", "polynom", "ggplot2", "shinyWidgets", "gridExtra", "rmarkdown", "kableExtra",
 #          "markdown", "sn", "rlang", "lattice", "reshape", "reshape2", "magrittr", "stats","reactlog","devtools")
 # new.pkg <- pkg[!(pkg %in% installed.packages())]
 # if (length(new.pkg)) {
@@ -359,7 +359,7 @@ server <- function(input, output,session) {
       }
       outDat <- Sensitivity_Sim(T1,cutOffTime,nSim,SensVals) }) #End progress bar
     }
-    #assign("out",outDat,envir = globalenv())
+    assign("out",outDat,envir = globalenv())
     outDat
   }) # End reactive
   
@@ -1333,7 +1333,7 @@ ui <- dashboardPage(#theme = shinytheme("slate"),
                                                h2("Initial Bacteria Concentrations (mg/L)", align = "center"),
                                                numericInput("Bact_ScaleFact_Acido", label=p("Acidogens",style="color:#080808"), min=1,step=1,value=300,max=10000),
                                                numericInput("Bact_ScaleFact_Aceto", label=p("Acetogens",style="color:#080808"), min=1,step=1,value=3000,max=10000),
-                                               numericInput("Bact_ScaleFact_Meth", label=p("Methanogens",style="color:#080808"), min=1,step=1,value=3000,max=10000),
+                                               numericInput("Bact_ScaleFact_Meth", label=p("Methanogens",style="color:#080808"), min=1,step=1,value=3500,max=10000),
                                                numericInput("Bact_ScaleFact_Bact", label=p("Bacteroides",style="color:#080808"), min=1,step=1,value=300,max=10000),
                                                sliderInput("DecayRate",label=p("Decay Rate",style="color:#080808"), post=" 1/h", 0,0.002,0.001,0.0002,ticks = F)
                            ),
@@ -1350,7 +1350,7 @@ ui <- dashboardPage(#theme = shinytheme("slate"),
                                                numericInput("WT_Perc_Guar_IN", 
                                                             label=p("Guar Gum",style="color:#080808"), min=0.1,step=.01,value=0.83,max=2),
                                                numericInput("WT_Perc_PEG_IN", 
-                                                            label=p("PEG 400",style="color:#080808"), min=0.1,step=.01,value=0.4,max=2),
+                                                            label=p("PEG 400",style="color:#080808"), min=0.1,step=.01,value=0.42,max=2),
                                                shinyWidgets::dropdown(
                                                  shinydashboard::box(width = 12, status = "primary", solidHeader = FALSE,
                                                                      h2("PEG MW Distribution", align = "center"),
@@ -1365,9 +1365,9 @@ ui <- dashboardPage(#theme = shinytheme("slate"),
                                                  animate = animateOptions(enter = "fadeInDown", exit = "fadeOutUp",duration = 0.8)
                                                ),
                                                numericInput("WT_Perc_MeOL_IN", 
-                                                            label=p("Methanol",style="color:#080808"), min=0.1,step=.01,value=0.6,max=0.8),
+                                                            label=p("Methanol",style="color:#080808"), min=0.1,step=.01,value=0.63,max=0.8),
                                                numericInput("WT_Perc_ISO_IN", 
-                                                            label=p("Isopropanol",style="color:#080808"), min=0.1,step=.01,value=0.6,max=0.8)
+                                                            label=p("Isopropanol",style="color:#080808"), min=0.1,step=.01,value=0.63,max=0.8)
                            ),
                            label = "Chemical Compounds", style = "stretch",size="sm", #up=TRUE,
                            status = "primary", width = "420px",
@@ -1396,8 +1396,8 @@ ui <- dashboardPage(#theme = shinytheme("slate"),
                          shinyWidgets::dropdown(
                            shinydashboard::box(width = 12, status = "primary", solidHeader = FALSE,
                                                h2("Parameter Variability (CV %)", align = "center"),
-                                               sliderInput("kinetic_var",label= p("Kinetic Rates",style="color:#080808"), 0,100,25,1),
-                                               sliderInput("yield_var",label= p("Bacteria Yields",style="color:#080808"), 0,50,10,1),
+                                               sliderInput("kinetic_var",label= p("Kinetic Rates",style="color:#080808"), 0,100,30,1),
+                                               sliderInput("yield_var",label= p("Bacteria Yields",style="color:#080808"), 0,50,15,1),
                                                radioGroupButtons("confInterval",label=p("Confidence Interval (95%)",style="color:#080808"),justified = TRUE,
                                                                  checkIcon = list(yes = icon("ok", lib = "glyphicon")),
                                                                  choices = c("Confidence Band","Error Bars"),selected = "Confidence Band")
@@ -1415,7 +1415,7 @@ ui <- dashboardPage(#theme = shinytheme("slate"),
                                                radioGroupButtons("simType",label=p("Type of Simulation",style="color:#080808"),justified = TRUE,
                                                                  checkIcon = list(yes = icon("ok", lib = "glyphicon")),
                                                                  choices = c("Normal","Sensitivity Analysis"),selected = "Normal"),
-                                               numericInput("nSim", label=p("Number of Simulations",style="color:#080808"), min=1,step=1,value=15,max=200),
+                                               numericInput("nSim", label=p("Number of Simulations",style="color:#080808"), min=1,step=1,value=20,max=200),
                                                conditionalPanel("input.simType=='Sensitivity Analysis'",
                                                                 h2("Sensitivity Analysis", align = "center"),
                                                                 pickerInput(inputId = "SensParam",label = p("Choose Parameter to Vary",style="color:#080808"), 
@@ -1458,17 +1458,17 @@ ui <- dashboardPage(#theme = shinytheme("slate"),
                fluidRow(column(1),
                         column(10,
                                sliderInput("cutOff",label="Truncate Data", post=" h",
-                                     25,300,115,5),
+                                     25,300,100,5),
                                awesomeCheckbox(
                                  inputId = "plotPoints",label = "Show Data Points on Graphs?", value = FALSE,status = "info"
                                )
                  )))
       ),
-    hr(),
-    sidebarMenu(
-      br(),
-      div(img(src="FrackOff.jpg",height=301,width=180),style="text-align: center;")
-    )   
+    hr()#,
+    # sidebarMenu(
+    #   br(),
+    #   div(img(src="FrackOff.png",height=160,width=200),style="text-align: center;")
+    # )   
     #)
   ), # End dashboardSidebar
   
