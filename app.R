@@ -77,8 +77,8 @@ server <- function(input, output,session) {
       #includeMarkdown("MathModel.Rmd")
       #includeMarkdown(rmarkdown::render("MathModel.Rmd",'html_document'))
       #HTML(markdown::markdownToHTML(knit('MathModel.Rmd', quiet = TRUE), fragment.only=TRUE))
-      withMathJax(includeMarkdown("GettingStarted.Rmd"))
-      #withMathJax(HTML(markdown::markdownToHTML(knit("MathModel.Rmd", quiet = TRUE), fragment.only=TRUE,title="Frack Off",header="Mathematical Model for Anaerobic Digestion")))
+      #withMathJax(includeMarkdown("GettingStarted.Rmd"))
+      withMathJax(HTML(markdown::markdownToHTML(knit("GettingStarted.Rmd", quiet = TRUE), fragment.only=TRUE,title="Frack Off",header="Getting Started")))
     )
   })
   
