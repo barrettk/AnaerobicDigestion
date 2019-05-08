@@ -5,6 +5,7 @@ author: "Kyle Barrett"
 header-includes: \usepackage{amsmath}
 output:
   html_document:
+   fig_caption: true
    mathjax: "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
    number_sections: true
 params:
@@ -60,9 +61,10 @@ This app is associated with my senior design project in chemical engineering at 
 The model was developed to simulate the degradation of heavy organic compounds through anaerobic digestion. Five unique processes take place in the simulated batch reactor, including the enzymatic hydrolysis of guar gum, acidogenesis of polysaccharide chains, acetogensis, methanogenesis, and anaerobic degredation using bacteroides. See the `Background of Process` tab for a more detailed process description.
 <br><br>
 
-<p align="center">
-  <img src="www/FrackOff.png" alt="drawing" width="900" height="620"/>
-</p>
+<!-- <p align="center"> -->
+<!--   <img src="www/FrackOff.png" alt="drawing" width="900" height="620"/> -->
+<!-- </p> -->
+![Credit: Luke Growney](www/FrackOff.png)
 
 # **Introduction and Motivation**
 
@@ -82,6 +84,7 @@ The Contaminants being degraded in this unit include:
 <p align="center">
   <img src="www/BatchReactor.png" alt="drawing" width="1150" height="720"/>
 </p>
+
 # **What the App Does**
 
 
@@ -97,7 +100,7 @@ Below is a rough illustration of how the app works evaluates reactive objects as
 
 <center>
 
-![plot of Workflow](www/App_workflow_chart.jpg)
+![](www/App_workflow_chart.jpg)
 
 </center>
 
