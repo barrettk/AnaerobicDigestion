@@ -12,7 +12,6 @@ params:
 runtime: shiny
 theme: cerulean
 ---
-
 <style>
 body {
 text-align: justify}
@@ -47,14 +46,84 @@ code.r{ /* Code block */
 pre { /* Code block - determines code spacing between lines */
     font-size: 14px;
 }
+body .main-container {
+max-width: 2000px;
+}
 </style>
 
-## **Components Not Added Yet**: 
+# **Model Assumptions and Limitations**
 
-  * Petrolium distillates, methanol, and isopropanol are still in research stage
-  * In addition to the above components, PEG-400 has not been added to the mathematical representation (this page) yet
+<table class="table table-striped" style="width: auto !important; margin-left: auto; margin-right: auto;">
+ <thead>
+  <tr>
+   <th style="text-align:center;"> Num </th>
+   <th style="text-align:center;"> Comment </th>
+   <th style="text-align:center;"> Effect of Addressing Comment </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> Ideally, each bacteria would be kept track of separately, and not as a category (i.e. acetogen, etc.) → Some strains participate in several included reactions, but have varying affinity per substrate. Others may only degrade a specific substrate. </td>
+   <td style="text-align:center;"> Actual degredation rates could be much higher or lower, as some bacteria strains perform synergistically when together, while others may interfere with each other </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> Initial reactor temp is based on optimal conditions for only some of the bacteria (methanogens/some acetogen). However, all strains of bacteria can survive within the restricted temperature range. </td>
+   <td style="text-align:center;"> Bacteria behavior would be more accurate. </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 3 </td>
+   <td style="text-align:center;"> Most kinetic parameters do not change with temperature due to lack of availability. </td>
+   <td style="text-align:center;"> Model fit would be more reflective of temperature changes. </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 4 </td>
+   <td style="text-align:center;"> Kinetic parameters not fit to observational data. Based solely on kinetic paramaters from the literature that have been extrapolated to this environment. </td>
+   <td style="text-align:center;"> Model would be MUCH more reflective of the process. </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 5 </td>
+   <td style="text-align:center;"> Some Parameters were adjusted by hand to more closely match the observed degradation times taken from the literature. </td>
+   <td style="text-align:center;"> This is an approximation due to the lack of observational data and in some cases, kinietic paramaters. </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 6 </td>
+   <td style="text-align:center;"> Petroleum distillates breakdown into many components, including methanol and isopropanol. However to simplify the model, it was assumed that they only broke down to methanol and isopropanol. Thus the WT percents of each alcohol were increased to account for the presence of additional petroleum distillates. </td>
+   <td style="text-align:center;"> Model would better represent the chosen contaminants present in hydraulic fracking fluid. </td>
+  </tr>
+</tbody>
+</table>
 
-# **Hydrolysis of Guar Gum**: 
+# **Illustrations**
+## **Proposed Pathway of Guar Gum**
+<p align="center">
+  <img src="www/Guar_Deg.png" alt="drawing" width="1050" height="760"/>
+</p>
+
+## **Proposed Pathway of PEG-400 (n ~ 8.7)**
+<br>
+<p align="center">
+  <img src="www/PEG_Deg.png" alt="drawing" width="1050" height="760"/>
+</p>
+
+## **Proposed Pathway of Petroleum Distillates/Alcohols**
+<br>
+<p align="center">
+  <img src="www/Alcohol_Deg.png" alt="drawing" width="910" height="560"/>
+</p>
+
+## **Overall Reaction Mechanism**
+<br>
+<p align="center">
+  <img src="www/compartmentalModel.png" alt="drawing" width="1050" height="760"/>
+</p>
+
+# **Differential Equations (Guar Gum Only)**
+
+  * Due to the large number of PDE's, only the equations relating to guar gum are provided mathematically below. See the model file for the rest (code).
+
+## **Hydrolysis of Guar Gum**
 
 <br>
 
@@ -79,11 +148,11 @@ $$
      
 <br>
 
-# **Acidogenesis and Acetogenesis**: 
+## **Acidogenesis and Acetogenesis** 
 
 <br>
 
-## **Liquids**:
+### **Liquids**
 $$
 \mathbf{\frac{dEthanol}{dt}}= \left[Stoich \left(\frac{µ_{max,G}*C_{Glucose}}{Ks_G+C_{Glucose}}*\frac{X_{Acidogen}}{MW_{Glucose}*Y_{Acidogen,   G}} \right) -Stoich \left(\frac{µ_{max,E}*C_{Ethanol}}{Ks_E+C_{Ethanol}}*\frac{X_{Acetogen}}{MW_{Ethanol}*Y_{Acetogen, E}}\right) \right]*vol
 $$
@@ -126,7 +195,7 @@ Stoich \left(\frac{v_{max,M}*\left(\left[H_2 \right]-\left[H_2 \right]^* \right)
 $$
 <br>
 
-## **Gases**:
+### **Gases**
 
   *	Note: The following PDEs keep track of total moles, i.e. *Liquid* + *Gas*. The partitioning of moles into each phase are determined by Henry's constant, and is described following the differential equations.
 
@@ -169,7 +238,7 @@ $$
 
 
 
-## **Gas-Liquid Equilibrium**: 
+### **Gas-Liquid Equilibrium**
 
 $$
 \begin{align}
@@ -196,7 +265,7 @@ $$
 
 <br>
 
-# **Methanogenesis**: 
+## **Methanogenesis**
 
 <br>
 
@@ -206,7 +275,7 @@ Stoich \left(\frac{v_{max,M}*\left(\left[H_2 \right]-\left[H_2 \right]^* \right)
 $$
 <br>
 
-## **Gas-Liquid Equilibrium**: 
+### **Gas-Liquid Equilibrium** 
 
 <br>
 $$
@@ -222,7 +291,8 @@ $$
 \mathbf{CH_4 (Liq)}=P_{CH_4}*Henry_{CH_4}*vol
 $$
 <br>
-# **Bacteria Growth**: 
+
+## **Bacteria Growth** 
 
 <br>
 $$

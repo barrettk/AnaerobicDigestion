@@ -5,6 +5,7 @@ author: "Kyle Barrett"
 header-includes: \usepackage{amsmath}
 output:
   html_document:
+   fig_caption: true
    mathjax: "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
    number_sections: true
 params:
@@ -49,38 +50,59 @@ pre { /* Code block - determines code spacing between lines */
 }
 </style>
 
+
 ## **Quick Summary** 
 
 Navitage to the `Plots` or `Tables` tab on the left, and then adjust `Model Parameters` to see their effect on the overall process. Note that not every parameter will have an effect on every plot.
 
 ## **Purpose** 
 
-This app is associated with my senior design project in chemical engineering at Drexel University. [^1]
+This app is associated with my senior design project in chemical engineering at Drexel University (Team Name: Frack Off)[^1].
 The model was developed to simulate the degradation of heavy organic compounds through anaerobic digestion. Five unique processes take place in the simulated batch reactor, including the enzymatic hydrolysis of guar gum, acidogenesis of polysaccharide chains, acetogensis, methanogenesis, and anaerobic degredation using bacteroides. See the `Background of Process` tab for a more detailed process description.
 <br><br>
+
+<!-- ![Credit: Luke Growney](www/FrackOff.png) -->
+<img src="www/FrackOff.png" title="plot of chunk unnamed-chunk-1" alt="plot of chunk unnamed-chunk-1" width="100%" />
+Credit: Luke Growney
 # **Introduction and Motivation**
 
-In the pursuit of energy independence in the United States and abroad, hydraulic fracking is an increasingly popular method of natural gas extraction. As the popularity of this particular form of drilling increases, some of the negative impacts of the process are starting to manifest as well. The primary impact that most people hear about is the contamination of drinking water supplies on or near fracking sites. The goal of this project was to develop a system that is able to remove the contaminants left in the water affected by the fracking process. A batch anearobic bioreactor is the second out of four units in the developed PFD, and was modeled using kinetic parameters found in the literature. The model simulates the degredation and conversion of the contaminants into biogas (*$CO_{2}$*, *$H_{2}$*, and *$CH_{4}$*). 
+In the pursuit of energy independence in the United States and abroad, hydraulic fracking is an increasingly popular method of natural gas extraction. As the popularity of this particular form of drilling increases, some of the negative impacts of the process are starting to manifest as well. The primary impact that most people hear about is the contamination of drinking water supplies on or near fracking sites. The goal of this project was to develop a system that is able to remove the contaminants left in the water affected by the fracking process. A batch anearobic bioreactor is the second out of four units in the developed PFD, and was modeled using kinetic parameters found in the literature. A snippet of the PFD can be seen below. The model simulates the degredation and conversion of particular contaminants into biogas (*$CO_{2}$*, *$H_{2}$*, and *$CH_{4}$*). 
 <br><br>
 The Contaminants being degraded in this unit include:
 
   * **Guar Gum** *(Done)*
   * **PEG-400** *(Done)*
-  * Petrolium Distillates
-  * Methanol *(Research Stage)*
-  * Isopropanol *(Research Stage)*
+  * **Petrolium Distillates** *(Accounted For)*
+  * **Methanol** *(Done)*
+  * **Isopropanol** *(Done)*
 
 <br>
+
+## **PFD Snippet (Batch Anaerobic Bioreactor)**
+<p align="center">
+  <img src="www/BatchReactor.png" alt="drawing" width="1150" height="720"/>
+</p>
+
 # **What the App Does**
 
 
 The purpose of this app is to optimize the model parameters in order to increase the profitability of the bioreactor. The user will be able to adjust initial bacteria concentrations, reactor temperature (both static and dynamic), etc., and see a visual representation of the outcome. Note that not all adjustable parameters will have an effect on every plot.
 
-As soon as the user loads the app, the model is compiled and run using the current parameter settings. As the user adjusts these parameters, the plots and tables will update according to the new settings once the **Resimulate** button has been clicked (This button is on each of the table and plot tabs).
+As soon as the user loads the app, the model is compiled and run using the current parameter settings. As the user adjusts these parameters, the plots and tables will update according to the new settings.
 
 The tabs on the left then allow the user to navigate the simulated reactor output and read more about the process. You can also specify the time in which to truncate the data and evaluate the output, though the minimum value is currently 100 h. The reactor that follows the anaerobic digestor is capable of removing small quantities left over. Ideally you would set a minimum acceptable concentration, and optimize parameters to decrease the time required to reduce the contaminants to that concentration, though this not been implemented due to the lack of observational data.
 
-<br>
+## **App Reactivity**
+
+Below is a rough illustration of how the app works evaluates reactive objects as parameters are altered. To see all the reactive objects, press `Cmd + F3` on mac and `Ctrl + F3` on windows (Note that this will slow down the app, and will become more noticable with a larger number of simulations).
+
+<center>
+
+![](www/App_workflow_chart.jpg)
+
+</center>
+
+
 # **Side Tabs**
 
 
@@ -96,21 +118,10 @@ The tabs on the left then allow the user to navigate the simulated reactor outpu
   
   * Use the `Background of Process` tab to download a PDF summarizing the model process.
 
-
-## **Features Coming Soon** 
-
-  * Addition of petrolium distillates, methanol, and isopropanol to the model
-  * Temperature Optimization --> most likely piecewise function
-  * Visual Representation of model
-  
-## **Potential Upcoming Features** 
-
-  * Expected Revenue Plots
-  * Optimization of other reactor settings
   
 <br>
 [^1]: Credit:
 
     Year: 2019, Team Name: "Frack Off", Model/App Developer: Kyle Barrett
-    Group Members: Kyle Barrett, Luke Growney, Prem Patel, Farhaan Rizvi
+    Group Members: Luke Growney, Prem Patel, Farhaan Rizvi
 

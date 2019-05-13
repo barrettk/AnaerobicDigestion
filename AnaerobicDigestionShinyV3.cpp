@@ -6,10 +6,10 @@ $PARAM
   scale_Day = 1 // 1 for Day scaling, 0 for hourly.
   Days = 4.17 // Number of dates
   flow = 810 // L/h (810 * 55 wells = 44550)
-  mass_flow_per_well = 1726 // lb/h --> round(1866-22.11*348/55) (subtracted sand)
+  mass_flow_per_well = 1866 // lb/h --> round(1866-22.11*348/55) (subtracted sand)
   BATCH = 1 // !1 for CSTR (i.e. 0)
   Temp = 30 // celsius
-  vol_per_well = 786 // L --> round(810-3.78541*348/55) (subtracted sand)
+  vol_per_well = 810 // L --> round(810-3.78541*348/55) (subtracted sand)
   wells = 55
   // H2_perc_head_space = 0.15 // 0.015 // gas mole fraction
   // CO2_perc_head_space = 0.85 // 0.12 // gas mole fraction
@@ -37,7 +37,7 @@ $PARAM
   // Bacetria (vol_per_well/volFromPaper in Liters --> 810/(20/1000) = 40500)
   Bact_ScaleFact_Acido = 0.3 
   Bact_ScaleFact_Aceto = 3
-  Bact_ScaleFact_Meth = 0.5
+  Bact_ScaleFact_Meth = 3.5
   Bact_ScaleFact_Bact = 0.3
 
 // Kinetic Data Import From Bacteria_kinetics.R
@@ -64,7 +64,7 @@ $PARAM
     b_Meth_km = 0.1449059
     c_Meth_km = -0.004059418
 
-    TempSlope = -0.1
+    TempSlope = 0
 DecayRate = 0.001
   
 $FIXED
