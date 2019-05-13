@@ -36,8 +36,6 @@ Contaminants being converted in bioreactor:
 - Methanol (Yellow) & Isopropanol (Orange)
 - Petroleum Distillates (Not shown)
 
-(Missing Petrolium distillates and Isopropanol from model and mechanism) 
-
 
 ![CMT Model](www/compartmentalModel.png)
 
