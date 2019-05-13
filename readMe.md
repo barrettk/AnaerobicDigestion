@@ -41,15 +41,12 @@ Contaminants being converted in bioreactor:
 
 ## Side Tabs in App
 
-  * Use the `Model Parameters` tab to adjust the model inputs. Clicking a category will open a separate menu with adjustable parameters. Click the category again to make the menu disappear. The `simulation` option will allow for a sensitivity analysis of a chosen parameter.
+  * Use the `Model Parameters` tab to adjust the model inputs. Clicking a category will open a separate menu with adjustable parameters. Click the category again to make the menu disappear. Kinetic variability can be adjusted using the `Variability` tab.
   
 ![Screenshot](Screenshot_modelParam.png)
 
 
   * Use the `Plots` tab to view a specific set of plots. Selections include *Main Components*,  *Intermediate Products*,  *Bacteria Growth*, and *Reactor Properties*.
-  
-![Screenshot](Screenshot_Plots.png)
-
 
   * Use the `Tables` tab to view the input and output concentrations. Selections include *Main Components*  and *Reactor Properties*.
  
@@ -61,7 +58,7 @@ Contaminants being converted in bioreactor:
 
 ### Sensitivity Analysis
 
-Example of how to perform a sensitivity analysis on a given parameter:
+The `simulation` option will allow for a sensitivity analysis of a chosen parameter. Below is an example of how to perform a sensitivity analysis on a given parameter:
 
 ![Screenshot](Screenshot_Sensitivity.png)
 
