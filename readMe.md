@@ -72,7 +72,7 @@ The `simulation` option will allow for a sensitivity analysis of a chosen parame
 * Author: **Kyle Barrett**
 * Group Members: Kyle Barrett, Luke Growney, Prem Patel, Farhaan Rizvi
 * Modeled using [mrgsolve](https://github.com/metrumresearchgroup/mrgsolve) - Solving of PDE's 
-* For more information about this project, check out the final [paper] (https://www.researchgate.net/publication/334129447_Final_Paper) or higher level [summary](https://www.researchgate.net/publication/334129517_Final_Presentation).
+* For more information about this project, check out the final [paper](https://www.researchgate.net/publication/334129447_Final_Paper) or higher level [summary](https://www.researchgate.net/publication/334129517_Final_Presentation).
 
 <a name="myfootnote1">1</a>:
     Year: 2019, Team Name: "Frack Off", Senior Design Project at Drexel University
