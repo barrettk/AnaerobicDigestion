@@ -25,6 +25,7 @@ CH4_Tot <- sum(newDat[5:6,2:3]$Outlet)
 sum <- data.frame(c("H2","CO2","CH4"),c(H2_Tot,CO2_Tot,CH4_Tot)); names(sum) <- c("Component","Value"); sum
 
 #### Theoretical Yield of Methanol ####
+
 # Carbon Dioxide/Hydrogen to Methanol
   # CO2 + 3H2 → CH3OH + H2O --> H2 limiting
   # Link: http://www.chemikinternational.com/wp-content/uploads/2014/02/8.pdf
@@ -47,6 +48,7 @@ out_CO2
 data.frame(Components=c("H2","CO2","CH4","Methanol"),Case1 = c(H2_Tot,CO2_Tot,CH4_Tot,0),Case2 =c(0,out_CO2,0,Methanol_Tot))
 
 ###Summary Tables###
+
 head(SumDat_Chem); summary(SumDat_Bact)
   #Main Products
   SumDat_Chem$Flow <- rep(c("Inlet","Outlet"),dim(SumDat_Chem)[[1]]/2)

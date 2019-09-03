@@ -1,5 +1,5 @@
 
-# pkg <- c("shiny", "shinyAce", "shinydashboard", "dplyr", "knitr", "plyr", "tidyverse", "cowplot",
+# pkg <- c("shiny", "shinyAce", "shinydashboard", "dplyr", "knitr", "plyr", "tidyverse", "cowplot","polynom",
 #          "wrapr", "extrafont", "polynom", "ggplot2", "shinyWidgets", "gridExtra", "rmarkdown", "kableExtra",
 #          "markdown", "sn", "rlang", "lattice", "reshape", "reshape2", "magrittr", "stats","reactlog","devtools")
 # new.pkg <- pkg[!(pkg %in% installed.packages())]
@@ -24,6 +24,7 @@ library(knitr);  library(webshot)
 library(kableExtra)
 
 #Server Packages
+suppressMessages(library(polynom,quietly = T))
 suppressMessages(library(plyr,quietly = T))
 suppressMessages(library(dplyr,quietly = T))
 suppressMessages(library(ggplot2,quietly = T))
