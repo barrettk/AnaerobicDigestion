@@ -29,6 +29,7 @@ devtools::install_github("metrumresearchgroup/mrgsolve", ref="dev")
 ```
 Installing the above packages prior to running will speed up the initial loading by a lot. Make sure each of the packages can be loaded via `library()`. **Note**: You will need *Rtools* (windows) or *Xcode* (mac) installed in order to use ***[mrgsolve](https://github.com/metrumresearchgroup/mrgsolve)***. See footnote for further details on mac install.<sup>[2](#myfootnote2)
 </sup> To run the app locally, run the following command:
+`library(shiny)`
 `runGitHub("AnaerobicDigestion","KyleBarrett")`
 
 ## Proposed Reaction Mechanisms involved in process
