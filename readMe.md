@@ -13,7 +13,7 @@ As soon as the user loads the app, the model is compiled and run using the curre
 </p><p align="justify">
 The tabs on the left then allow the user to navigate the simulated reactor output and read more about the process. You can also specify the time in which to truncate the data and evaluate the output, though the minimum value is currently 100 h. The reactor that follows the anaerobic digestor is capable of removing small quantities left over. Ideally you would set a minimum acceptable concentration, and optimize parameters to decrease the time required to reduce the contaminants to that concentration, though this not been implemented due to the lack of observational data.
 </p>
-<br>
+
 
 ### Previewing the Application
 
