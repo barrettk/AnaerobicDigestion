@@ -44,6 +44,7 @@ Installing the above packages prior to running will speed up the initial loading
 library(shiny)
 runGitHub("AnaerobicDigestion","KyleBarrett")
 ```
+<br>
 
 ## Proposed Reaction Mechanisms involved in process
 
