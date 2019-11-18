@@ -12,6 +12,7 @@ The purpose of this app is to optimize the model parameters in order to increase
 As soon as the user loads the app, the model is compiled and run using the current parameter settings. As the user adjusts these parameters, the plots and tables will update according to the new settings.
 
 The tabs on the left then allow the user to navigate the simulated reactor output and read more about the process. You can also specify the time in which to truncate the data and evaluate the output, though the minimum value is currently 100 h. The reactor that follows the anaerobic digestor is capable of removing small quantities left over. Ideally you would set a minimum acceptable concentration, and optimize parameters to decrease the time required to reduce the contaminants to that concentration, though this not been implemented due to the lack of observational data.
+<br>
 
 ### Previewing the Application
 
@@ -20,7 +21,7 @@ The tabs on the left then allow the user to navigate the simulated reactor outpu
 * **However**, due to the lack of support for some of the utilized R packages, the model will fail to compile.
   * i.e. No simulated plots or tables will render
   * Thus it is ***only*** useful for understanding the **functionality** of the app
-
+<br>
 
 ### Prerequisites and Running the App (locally)
 
