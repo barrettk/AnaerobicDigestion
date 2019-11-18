@@ -22,7 +22,7 @@ The tabs on the left then allow the user to navigate the simulated reactor outpu
   * Thus it is ***only*** useful for understanding the **functionality** of the app
 
 
-### Prerequisites and Running the App
+### Prerequisites and Running the App (locally)
 
 Prior to running the command make sure you have R installed, along with the following necessary packages:
 ```
