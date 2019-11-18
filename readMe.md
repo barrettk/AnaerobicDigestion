@@ -15,11 +15,11 @@ The tabs on the left then allow the user to navigate the simulated reactor outpu
 
 ### Previewing the Application
 
-* The following link can be used to see how the app works without downloading anything
-       * [barrettkyle.shinyapps.io/BioReactorApp/](https://barrettkyle.shinyapps.io/BioReactorApp/)
+* The following link can be used to see how the app works without downloading anything.
+  * [barrettkyle.shinyapps.io/BioReactorApp/](https://barrettkyle.shinyapps.io/BioReactorApp/)
 * **However**, due to the lack of support for some of the utilized R packages, the model will fail to compile.
-       * i.e. No simulated plots or tables will render
-       * Thus it is ***only*** useful for understanding the **functionality** of the app
+  * i.e. No simulated plots or tables will render
+  * Thus it is ***only*** useful for understanding the **functionality** of the app
 
 
 ### Prerequisites and Running the App
