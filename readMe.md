@@ -6,12 +6,13 @@ The model was developed to simulate the degradation of heavy organic compounds t
 [![Watch the video](https://github.com/KyleBarrett/AnaerobicDigestion/blob/master/www/Screen%20Shot%202019-06-30%20at%204.24.49%20PM.png)](https://www.youtube.com/watch?v=Z9XZ7gUKEIQ&t=1s)
 
 ## Getting Started
-
+<p align="justify">
 The purpose of this app is to optimize the model parameters in order to increase the profitability of the bioreactor. The user will be able to adjust initial bacteria concentrations, reactor temperature (both static and dynamic), etc., and see a visual representation of the outcome. Note that not all adjustable parameters will have an effect on every plot.
-
+</p><p align="justify">
 As soon as the user loads the app, the model is compiled and run using the current parameter settings. As the user adjusts these parameters, the plots and tables will update according to the new settings.
-
+</p><p align="justify">
 The tabs on the left then allow the user to navigate the simulated reactor output and read more about the process. You can also specify the time in which to truncate the data and evaluate the output, though the minimum value is currently 100 h. The reactor that follows the anaerobic digestor is capable of removing small quantities left over. Ideally you would set a minimum acceptable concentration, and optimize parameters to decrease the time required to reduce the contaminants to that concentration, though this not been implemented due to the lack of observational data.
+</p>
 <br>
 
 ### Previewing the Application
