@@ -26,7 +26,7 @@ The tabs on the left then allow the user to navigate the simulated reactor outpu
 
 ### Prerequisites and Running the App (locally)
 
-Prior to running the command make sure you have R installed, along with the following necessary packages:
+**Prior** to running the app, make sure you have R installed, along with the necessary packages. The R packages can be installed using the following lines in your current R session:
 ```
 pkg <- c("shiny", "shinyAce", "shinydashboard", "dplyr", "knitr", "plyr", "tidyverse", "cowplot",
          "wrapr", "extrafont", "polynom", "ggplot2", "shinyWidgets", "gridExtra", "rmarkdown", "kableExtra",
