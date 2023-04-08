@@ -61,12 +61,12 @@ This app is associated with my senior design project in chemical engineering at 
 The model was developed to simulate the degradation of heavy organic compounds through anaerobic digestion. Five unique processes take place in the simulated batch reactor, including the enzymatic hydrolysis of guar gum, acidogenesis of polysaccharide chains, acetogensis, methanogenesis, and anaerobic degredation using bacteroides. See the `Background of Process` tab for a more detailed process description.
 <br><br>
 
-<!-- ![Credit: Luke Growney](www/FrackOff.png) -->
+
 ```{r echo=FALSE, out.width = '100%'}
 knitr::opts_chunk$set(fig.width=10, fig.height=8) 
 knitr::include_graphics("www/FrackOff.png")
 ```
-Credit: Luke Growney
+
 # **Introduction and Motivation**
 
 In the pursuit of energy independence in the United States and abroad, hydraulic fracking is an increasingly popular method of natural gas extraction. As the popularity of this particular form of drilling increases, some of the negative impacts of the process are starting to manifest as well. The primary impact that most people hear about is the contamination of drinking water supplies on or near fracking sites. The goal of this project was to develop a system that is able to remove the contaminants left in the water affected by the fracking process. A batch anearobic bioreactor is the second out of four units in the developed PFD, and was modeled using kinetic parameters found in the literature. A snippet of the PFD can be seen below. The model simulates the degredation and conversion of particular contaminants into biogas (*$CO_{2}$*, *$H_{2}$*, and *$CH_{4}$*). 
