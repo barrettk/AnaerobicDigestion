@@ -66,12 +66,15 @@ footnote for further details on mac install.<sup>[2](#myfootnote2)
 
 ## Proposed Reaction Mechanisms
 
-Contaminants being converted in bioreactor: - Guar Gum (Brown) - PEG 400
-(Red) - Methanol (Yellow) & Isopropanol (Orange) - Petroleum Distillates
-(Not shown)
+Contaminants being converted in bioreactor:
+
+-   Guar Gum (Brown)
+-   PEG 400 (Red)
+-   Methanol (Yellow) & Isopropanol (Orange)
+-   Petroleum Distillates (Not shown)
 
 Below is the overall proposed reaction mechanism. Specific reaction
-mechanisms are illustrated more clearly within the app
+mechanisms are illustrated more clearly within the app.
 
 ![CMT Model](app/www/compartmentalModel.png)
 
