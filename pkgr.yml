@@ -1,0 +1,39 @@
+Version: 1
+
+Packages:
+  - dplyr
+  - ggplot2
+  - bitops
+  - caTools
+  - rsconnect
+  - shiny 
+  - testthat
+  - shinyWidgets
+  - rlang
+  - shinydashboard
+  - RCurl
+  - roxygen2
+  - mrgsolve
+  - extrafont
+  - shinyAce
+  - rmarkdown
+  - markdown
+  - webshot
+  - knitr
+  - kableExtra
+  - polynom
+  - plyr
+  - tidyverse
+  - sn
+  - wrapr
+  - gridExtra
+  - reshape2
+  
+Repos:
+  - MPN: https://mpn.metworx.com/snapshots/stable/2022-10-20
+  - CRAN: https://cran.rstudio.com
+
+      
+Lockfile:
+    Type: renv
+

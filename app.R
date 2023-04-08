@@ -1,59 +1,5 @@
 
-# pkg <- c("shiny", "shinyAce", "shinydashboard", "dplyr", "knitr", "plyr", "tidyverse", "cowplot","polynom",
-#          "wrapr", "extrafont", "polynom", "ggplot2", "shinyWidgets", "gridExtra", "rmarkdown", "kableExtra",
-#          "markdown", "sn", "rlang", "lattice", "reshape", "reshape2", "magrittr", "stats","reactlog","devtools")
-# new.pkg <- pkg[!(pkg %in% installed.packages())]
-# if (length(new.pkg)) {
-#   install.packages(new.pkg,dependencies=T)
-# }
-# library(devtools)
-# pkg2 <- "mrgsolve"
-# new.pkg2 <- pkg2[!(pkg2 %in% installed.packages())]
-# if("mrgsolve" %in% new.pkg2){
-#   devtools::install_github("metrumresearchgroup/mrgsolve", ref="dev")
-# }
-suppressMessages(library(rsconnect,quietly = T))
-#UI Packages
-suppressMessages(library(shiny,quietly = T))
-suppressMessages(library(shinyAce,quietly = T))
-suppressMessages(library(shinydashboard,quietly = T))
-#library(shiny.semantic)
-library(shinyWidgets,quietly = T)
-library(rmarkdown); library(markdown)
-library(knitr);  library(webshot)
-library(kableExtra)
-
-#Server Packages
-suppressMessages(library(polynom,quietly = T))
-suppressMessages(library(plyr,quietly = T))
-suppressMessages(library(dplyr,quietly = T))
-suppressMessages(library(ggplot2,quietly = T))
-#library(cowplot)
-suppressMessages(library(tidyverse,quietly = T))
-suppressMessages(library(sn,quietly = T))
-library(rlang)
-library(wrapr)
-#library(lattice,quietly = T)
-library(gridExtra,quietly = T)
-library(extrafont,quietly = T)
-library(reshape2,quietly = T)
-#Mrgsolve
-library(mrgsolve)
-options(mrgsolve_mread_quiet=TRUE)
-# tell shiny to log all reactivity
-#library(reactlog)
-#options(shiny.reactlog = TRUE)
-
-# Compile the model
-mod <- mrgsolve::mread("AnaerobicDigestionShinyV3.cpp")
-#assign("mod",mod,envir = globalenv())
-#source("Bacteria_kinetics.R",local = T)
-source("Bacteria_kinetics.R",local=globalenv())
-.model <- paste(mrgsolve:::code(mod), collapse='\n')
-assign(".model",.model,envir = globalenv())
-SensChoices <- c("Acidogen Conc.","Acetogen Conc.","Methanogen Conc.","Bacteroid Conc.","Bacteria Decay Rate","Head Space Ratio","Temperature","Number of Wells","WT % of Guar Gum","WT % of PEG-400","WT % of Methanol","WT % of Isopropanol")
-
-
+source("./global.R")
 # Server Code -------------------------------------------------------------
 
 server <- function(input, output,session) {
@@ -63,22 +9,12 @@ server <- function(input, output,session) {
   sapply(rmdfiles, knit, quiet = T)
   output$markdownRM <- renderUI({
     fluidPage(
-      #tags$head(HTML("<script type='text/x-mathjax-config'>MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: 'all'} } });</script>")),
-      #includeMarkdown("MathModel.Rmd")
-      #includeMarkdown(rmarkdown::render("MathModel.Rmd",'html_document'))
-      #HTML(markdown::markdownToHTML(knit('MathModel.Rmd', quiet = TRUE), fragment.only=TRUE))
-      #withMathJax(includeMarkdown("MathModel.Rmd"))
       withMathJax(HTML(markdown::markdownToHTML(knit("MathModel.Rmd", quiet = TRUE), fragment.only=TRUE,title="Frack Off",header="Mathematical Model for Anaerobic Digestion")))
     )
   })
   #Render GettingStarted UI
   output$markdownGS <- renderUI({
     fluidPage(
-      #tags$head(HTML("<script type='text/x-mathjax-config'>MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: 'all'} } });</script>")),
-      #includeMarkdown("MathModel.Rmd")
-      #includeMarkdown(rmarkdown::render("MathModel.Rmd",'html_document'))
-      #HTML(markdown::markdownToHTML(knit('MathModel.Rmd', quiet = TRUE), fragment.only=TRUE))
-      #withMathJax(includeMarkdown("GettingStarted.Rmd"))
       withMathJax(HTML(markdown::markdownToHTML(knit("GettingStarted.Rmd", quiet = TRUE), fragment.only=TRUE,title="Frack Off",header="Getting Started")))
     )
   })
@@ -159,7 +95,7 @@ server <- function(input, output,session) {
       test2 <- test*44+18 %>% as.vector() %>% as.numeric()
       hist1 <- graphics::hist(test,breaks=4:9,plot=F)
       yA <- round(hist1$density,3); MW_PEG_In <- mean(test2)
-    #if(length(test)>1){
+      
       param(Bact_ScaleFact_Aceto = (as.numeric(input[["Bact_ScaleFact_Aceto"]])/1000),
             Bact_ScaleFact_Acido = (as.numeric(input[["Bact_ScaleFact_Acido"]])/1000),
             Bact_ScaleFact_Meth = (as.numeric(input[["Bact_ScaleFact_Meth"]])/1000),
@@ -184,9 +120,6 @@ server <- function(input, output,session) {
             Intercept_Meth_km=as.numeric(coef_Meth_km[1]),a_Meth_km=as.numeric(coef_Meth_km[2]),
             b_Meth_km=as.numeric(coef_Meth_km[3]),c_Meth_km=as.numeric(coef_Meth_km[4])
       )
-    # }else{
-    #   NULL
-    # }
   })
   
   SensParam <- reactive({
@@ -271,16 +204,17 @@ server <- function(input, output,session) {
   TimeSolv <- reactive({
     shiny::req(input[["cutOff"]])
     cutOffTime <- as.numeric(input[["cutOff"]])
+    delta <- 0.1#cutOffTime
     #Times to solve equations
     if(cutOffTime<100 & cutOffTime>=80){
       addVal <- sort(unique(c(0.25,0.5,1:80,seq(80,cutOffTime,2.5))))
-      T1 <- tgrid(0,cutOffTime,cutOffTime, add=addVal)
+      T1 <- tgrid(0,cutOffTime,delta, add=addVal)
     }else if(cutOffTime<80){
       addVal <- sort(unique(c(0.25,0.5,1:cutOffTime)))
-      T1 <- tgrid(0,cutOffTime,cutOffTime, add=addVal)
+      T1 <- tgrid(0,cutOffTime,delta, add=addVal)
     }else if(cutOffTime>=100){
       addVal <- sort(unique(c(0.25,0.5,1:70,seq(72.5,82.5,by=2.5),seq(85,100,by=5),seq(100,cutOffTime,10))))
-      T1 <- tgrid(0,cutOffTime,cutOffTime, add=addVal)
+      T1 <- tgrid(0,cutOffTime,delta, add=addVal)
     }
     T1
   })
@@ -301,27 +235,29 @@ server <- function(input, output,session) {
     if(simType=="Normal"){
       Bact_kinetics <- isolate(omega_Kinetics())
       Bact_yields <- isolate(omega_Yields())
-      prog <- 20
+      prog <- 20; print(paste(prog,"%"))
       withProgress(message = 'Compiling and Simulating Model',
                    detail = paste('This may take a while...',prog,"%"), value = 20, max=100,
                    {
       Normal_Sim <- function(pars,T1,cutOffTime,nSim){
-        hmax=0.01; maxsteps=60000; prog <- 20
+        hmax=0.1; maxsteps=80000; prog <- 20
       repeat{
+        # set.seed(10101)
         outDat <- try({mod %>% param(pars) %>% omat(Bact_kinetics=Bact_kinetics,Bact_yields=Bact_yields) %>% 
           mrgsim(nid=nSim,tgrid=T1,end=cutOffTime,atol = 1E-10,maxsteps=maxsteps,hmax = hmax)},silent = T)
-        if (length(names(outDat)) >10 | maxsteps >= 210000){
+        if (length(names(outDat)) >10 | maxsteps >= 320000){
           prog <- 100
-          setProgress(value = prog,detail = paste('This may take a while...',prog,"%"))
+          setProgress(value = prog, detail = paste('This may take a while...',prog,"%"))
           break} 
-        hmax <- 0.001
-        maxsteps <- maxsteps + 50000
+        # hmax <- round(hmax/1.3, 3)
+        maxsteps <- maxsteps + 60000
         prog <- prog + 20
-        setProgress(value = prog,detail = paste('This may take a while...',prog,"%"))
+        print(paste(prog,"%"))
+        setProgress(value = prog, detail = paste('This may take a while...',prog,"%"))
       }
        return(outDat) 
       }
-      pars <- isolate(pars())
+      pars <- as.list(isolate(pars()))
       outDat <- Normal_Sim(pars,T1,cutOffTime,nSim) }) #End progress bar
     # If Sensitivity Analysis
     }else if(simType=="Sensitivity Analysis"){
@@ -336,7 +272,7 @@ server <- function(input, output,session) {
                    {
       #idata_set function
       Sensitivity_Sim <- function(T1,cutOffTime,nSim,SensVals){
-        hmax=0.01; maxsteps=60000
+        hmax=0.1; maxsteps=60000
         repeat{
           solveModel <- function(SensParam,T1,cutOffTime,nSim,SensVals){
             SensParam <- qc(.(SensParam)) 
@@ -351,7 +287,7 @@ server <- function(input, output,session) {
             prog <- 100
             setProgress(value = prog,detail = paste('This may take a while...',prog,"%"))
             break} 
-          hmax <- 0.001
+          # hmax <- 0.001
           maxsteps <- maxsteps + 50000
           prog <- prog + 20
           setProgress(value = prog,detail = paste('This may take a while...',prog,"%"))
@@ -379,12 +315,6 @@ server <- function(input, output,session) {
     }
   })
   
-  # observeEvent(c(input$resim1,input$resim2,input$resim3,input$resim4,
-  #                input$resim5,input$resim6,input$resim7,input$simType),{
-  #                  pars <- pars()
-  #                  out <- out()
-  #                  assign("out",out,envir = globalenv())
-  #                },ignoreNULL = T, ignoreInit = T) # End observeEvent
   
   varyParam <- reactive({
     shiny::req(input[["simType"]])
@@ -499,7 +429,7 @@ server <- function(input, output,session) {
       if(simType=="Sensitivity Analysis"){
         shiny::req(input[["SensParam"]])
         varyParam <- varyParam %>% as.character()
-        SumDat <- out %>% dplyr::select(ID,time,varyParam,eval(Inputs_Bact),eval(Outputs_Bact)) %>% as.data.frame
+        SumDat <- out %>% dplyr::select(ID,time,all_of(varyParam),eval(Inputs_Bact),eval(Outputs_Bact)) %>% as.data.frame
         if(varyParam=="WT_Perc_Guar_IN"|varyParam=="WT_Perc_PEG_IN"|varyParam=="WT_Perc_MeOL_IN"|varyParam=="WT_Perc_ISO_IN"){
           SumDat[varyParam] <- round(SumDat[varyParam]*100,3)
         }
@@ -552,30 +482,30 @@ server <- function(input, output,session) {
       withProgress(message = 'Summarizing Data',
                    detail = 'This may take a while...', value = 0, max=100, 
                    {
-      MainProdDat <- out %>% dplyr::select(ID,time,varyParam,GUAR_Conc,AVG_PEG_MW,CH4_GAS, H2_GAS, CO2_GAS,Conc_METHANOL,Conc_ISOPROPANOL) %>%
+      MainProdDat <- out %>% dplyr::select(ID,time,all_of(varyParam),GUAR_Conc,AVG_PEG_MW,CH4_GAS, H2_GAS, CO2_GAS,Conc_METHANOL,Conc_ISOPROPANOL) %>%
         dplyr::filter(time<=cutOffTime)  %>% dplyr::rename("Guar Gum (g/L)"=GUAR_Conc, "AVG PEG MW (g/mol)"=AVG_PEG_MW,"Methanol (mol/L)"=Conc_METHANOL,
                                                            "Isopropanol (mol/L)"=Conc_ISOPROPANOL,"H2 (mol-gas)"=H2_GAS,"CO2 (mol-gas)"=CO2_GAS,
                                                            "CH4 (mol-gas)"=CH4_GAS) %>% as.data.frame()
       setProgress(20)
-      IntermediateDat <- out %>% dplyr::select(ID,time,varyParam,GUAR_Conc,Conc_GLUCOSE,Conc_ETHANOL,Conc_PropAcid,Conc_ACETATE,CH4_GAS) %>%
+      IntermediateDat <- out %>% dplyr::select(ID,time,all_of(varyParam),GUAR_Conc,Conc_GLUCOSE,Conc_ETHANOL,Conc_PropAcid,Conc_ACETATE,CH4_GAS) %>%
         dplyr::filter(time<=cutOffTime)  %>% dplyr::rename("Guar Gum (g/L)"=GUAR_Conc,"CH4 (mol-gas)"=CH4_GAS, "Glucose (mol/L)"=Conc_GLUCOSE,
                                                            "Ethanol (mol/L)"=Conc_ETHANOL,"Propanoic Acid (mol/L)"=Conc_PropAcid,
                                                            "Acetate (mol/L)"=Conc_ACETATE) %>% as.data.frame()
       setProgress(45)
-      PEG_Dat <- out %>% dplyr::select(ID,time,varyParam,Conc_PEG9,Conc_PEG8,Conc_PEG7,Conc_PEG6,Conc_PEG5,Conc_PEG4,Conc_PEG3,Conc_DEG,Conc_EG,Conc_AcetHyde,Conc_ACETATE,CH4_GAS) %>%
+      PEG_Dat <- out %>% dplyr::select(ID,time,all_of(varyParam),Conc_PEG9,Conc_PEG8,Conc_PEG7,Conc_PEG6,Conc_PEG5,Conc_PEG4,Conc_PEG3,Conc_DEG,Conc_EG,Conc_AcetHyde,Conc_ACETATE,CH4_GAS) %>%
         dplyr::filter(time<=cutOffTime)  %>% dplyr::rename("PEG-9 (mol/L)"=Conc_PEG9,"PEG-8 (mol/L)"=Conc_PEG8,"PEG-7 (mol/L)"=Conc_PEG7,
                                                            "PEG-6 (mol/L)"=Conc_PEG6,"PEG-5 (mol/L)"=Conc_PEG5,"PEG-4 (mol/L)"=Conc_PEG4,
                                                            "PEG-3 (mol/L)"=Conc_PEG3,"DEG (mol/L)"=Conc_DEG,"EG (mol/L)"=Conc_EG,
                                                            "Acetaldehyde (mol/L)"=Conc_AcetHyde, "Acetate (mol/L)"=Conc_ACETATE,
                                                            "CH4 (mol-gas)"=CH4_GAS) %>% as.data.frame()
       setProgress(75)
-      SystemDat <- out %>% dplyr::select(ID,time,varyParam,H2O,V_TOT,Pressure_atm,Temp2) %>% 
+      SystemDat <- out %>% dplyr::select(ID,time,all_of(varyParam),H2O,V_TOT,Pressure_atm,Temp2) %>% 
         dplyr::filter(time<=cutOffTime)  %>% dplyr::rename("Total Pressure (atm)"=Pressure_atm, 
                                                            "Liquid Volume (% Change)"=V_TOT,"Water (% Change)"=H2O,"Temperature (C)" = Temp2) %>% as.data.frame()
       SystemDat$"Liquid Volume (% Change)" <- (SystemDat$"Liquid Volume (% Change)"/SystemDat$"Liquid Volume (% Change)"[1])*100
       SystemDat$"Water (% Change)" <- (SystemDat$"Water (% Change)"/SystemDat$"Water (% Change)"[1])*100
       setProgress(85)
-      BacteriaDat <- out %>% dplyr::select(ID,time,varyParam,Conc_ACIDOGEN,Conc_ACETOGEN,Conc_METHANOGEN,Conc_BACTEROID) %>% 
+      BacteriaDat <- out %>% dplyr::select(ID,time,all_of(varyParam),Conc_ACIDOGEN,Conc_ACETOGEN,Conc_METHANOGEN,Conc_BACTEROID) %>% 
         dplyr::filter(time<=cutOffTime)  %>% dplyr::rename("Acidogen Biomass (g/L)"=Conc_ACIDOGEN, "Acetogen Biomass (g/L)"=Conc_ACETOGEN,
                                                            "Methanogen Biomass (g/L)"=Conc_METHANOGEN,"Bacteroid Biomass (g/L)"=Conc_BACTEROID) %>% as.data.frame()
       if(varyParam=="WT_Perc_Guar_IN"|varyParam=="WT_Perc_PEG_IN"|varyParam=="WT_Perc_MeOL_IN"|varyParam=="WT_Perc_ISO_IN"){

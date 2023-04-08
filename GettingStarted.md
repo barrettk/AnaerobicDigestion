@@ -62,7 +62,7 @@ The model was developed to simulate the degradation of heavy organic compounds t
 <br><br>
 
 <!-- ![Credit: Luke Growney](www/FrackOff.png) -->
-<img src="www/FrackOff.png" title="plot of chunk unnamed-chunk-1" alt="plot of chunk unnamed-chunk-1" width="100%" />
+<img src="www/FrackOff.png" alt="plot of chunk unnamed-chunk-1" width="100%" />
 Credit: Luke Growney
 # **Introduction and Motivation**
 
