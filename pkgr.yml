@@ -28,6 +28,17 @@ Packages:
   - wrapr
   - gridExtra
   - reshape2
+  - here
+  # shinyapps.io requests the following additional packages
+  - checkmate
+  - lobstr
+  - magick
+  - matrixStats
+  - pander
+  - pryr
+  - rapportools
+  - reshape
+  - summarytools
   
 Repos:
   - MPN: https://mpn.metworx.com/snapshots/stable/2022-10-20
